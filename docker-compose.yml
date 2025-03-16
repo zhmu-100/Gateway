@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:8081/auth
+      - LOGGING_SERVICE_URL=http://logging-service:8082/api/logging
+      - PROFILE_SERVICE_URL=http://profile-service:8083/api/profiles
+      - TRAINING_SERVICE_URL=http://training-service:8084/api/training
+      - FEED_SERVICE_URL=http://feed-service:8085/api/feed
+      - NOTES_SERVICE_URL=http://notes-service:8086/api/notebook
+      - DIET_SERVICE_URL=http://diet-service:8087/api/diet
+      - STATISTICS_SERVICE_URL=http://statistics-service:8088/api/statistics
+      - FILE_SERVICE_URL=http://file-service:8089/api/files
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=development_secret_key
+      - JWT_ISSUER=com.mad.gateway
+      - JWT_AUDIENCE=mad-mobile-app
+    depends_on:
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - mad-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - mad-network
+
+  # The following services are placeholders for the actual microservices
+  # In a real environment, these would be replaced with the actual microservice containers
+
+  auth-service:
+    image: nginx:alpine
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./mock-services/auth:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  logging-service:
+    image: nginx:alpine
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./mock-services/logging:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  profile-service:
+    image: nginx:alpine
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./mock-services/profile:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  training-service:
+    image: nginx:alpine
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./mock-services/training:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  feed-service:
+    image: nginx:alpine
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./mock-services/feed:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  notes-service:
+    image: nginx:alpine
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./mock-services/notes:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  diet-service:
+    image: nginx:alpine
+    ports:
+      - "8087:8087"
+    volumes:
+      - ./mock-services/diet:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  statistics-service:
+    image: nginx:alpine
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./mock-services/statistics:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+  file-service:
+    image: nginx:alpine
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./mock-services/file:/usr/share/nginx/html
+    networks:
+      - mad-network
+
+volumes:
+  redis-data:
+
+networks:
+  mad-network:
+    driver: bridge
