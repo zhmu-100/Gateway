@@ -176,9 +176,27 @@ The gateway exposes the following API endpoints:
   - `application.conf` - Application configuration
   - `logback.xml` - Logging configuration
 
+### Documentation
+
+The project uses Dokka to generate API documentation. To generate the documentation:
+
+```bash
+./gradlew generateDocs
+```
+
+This will create HTML documentation in the `build/dokka` directory. Open `build/dokka/index.html` in a browser to view the documentation.
+
+The documentation includes:
+
+- Module overview
+- Package structure
+- Class and function documentation
+- API endpoints
+
 ### Adding a New Service
 
 1. Create a new service client in `services/`
 2. Add the service URL to `application.conf`
 3. Create route definitions in `routes/`
 4. Register the service client in `KoinConfig.kt`
+5. Add KDoc documentation to your new classes and functions

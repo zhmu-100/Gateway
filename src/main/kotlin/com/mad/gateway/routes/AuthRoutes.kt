@@ -11,13 +11,28 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-/** Authentication routes */
+/**
+ * Authentication routes for user management.
+ *
+ * This function configures routes for user authentication operations including:
+ * - Login
+ * - Registration
+ * - Token refresh
+ * - Logout
+ * - Token validation
+ */
 fun Route.authRoutes() {
     val authService by inject<AuthServiceClient>()
     val loggingService by inject<LoggingServiceClient>()
 
     route("/auth") {
-        // Login
+        /**
+         * Login endpoint.
+         *
+         * POST /api/auth/login
+         *
+         * Authenticates a user with username and password, returning JWT tokens on success.
+         */
         post("/login") {
             try {
                 val request = call.receive<LoginRequest>()
@@ -38,7 +53,13 @@ fun Route.authRoutes() {
             }
         }
 
-        // Register
+        /**
+         * Registration endpoint.
+         *
+         * POST /api/auth/register
+         *
+         * Creates a new user account with the provided username, email, and password.
+         */
         post("/register") {
             try {
                 val request = call.receive<RegisterRequest>()
@@ -60,7 +81,13 @@ fun Route.authRoutes() {
             }
         }
 
-        // Refresh token
+        /**
+         * Token refresh endpoint.
+         *
+         * POST /api/auth/refresh
+         *
+         * Issues a new access token using a valid refresh token.
+         */
         post("/refresh") {
             try {
                 val request = call.receive<RefreshTokenRequest>()
@@ -78,7 +105,14 @@ fun Route.authRoutes() {
             }
         }
 
-        // Logout
+        /**
+         * Logout endpoint.
+         *
+         * POST /api/auth/logout
+         *
+         * Invalidates the user's refresh token, requiring re-authentication.
+         * Requires a valid JWT token.
+         */
         authenticate("auth-jwt") {
             post("/logout") {
                 try {
@@ -103,7 +137,14 @@ fun Route.authRoutes() {
             }
         }
 
-        // Validate token
+        /**
+         * Token validation endpoint.
+         *
+         * GET /api/auth/validate
+         *
+         * Validates the current JWT token and returns user information.
+         * Requires a valid JWT token.
+         */
         authenticate("auth-jwt") {
             get("/validate") {
                 try {
@@ -134,10 +175,33 @@ fun Route.authRoutes() {
 
 // Data classes for requests
 
+/**
+ * Request data for user login.
+ *
+ * @property username The user's username
+ * @property password The user's password
+ */
 data class LoginRequest(val username: String, val password: String)
 
+/**
+ * Request data for user registration.
+ *
+ * @property username The desired username
+ * @property email The user's email address
+ * @property password The desired password
+ */
 data class RegisterRequest(val username: String, val email: String, val password: String)
 
+/**
+ * Request data for token refresh.
+ *
+ * @property refreshToken The refresh token to use for obtaining a new access token
+ */
 data class RefreshTokenRequest(val refreshToken: String)
 
+/**
+ * Request data for logout.
+ *
+ * @property refreshToken The refresh token to invalidate
+ */
 data class LogoutRequest(val refreshToken: String)

@@ -9,11 +9,29 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-/** Base service client implementation */
+/**
+ * Base service client implementation.
+ *
+ * This abstract class provides a foundation for all service clients in the application.
+ * It encapsulates common HTTP operations and handles the communication with backend services.
+ *
+ * @property client The Ktor HTTP client used for making requests
+ */
 abstract class ServiceClient(protected val client: HttpClient) {
+    /**
+     * The base URL for the service.
+     *
+     * This should be set by each implementing service client, typically from configuration.
+     */
     protected abstract val baseUrl: String
 
-    // Standard HTTP methods with single type parameter
+    /**
+     * Performs an HTTP GET request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     */
     protected suspend inline fun <reified T> get(
             endpoint: String,
             headers: Map<String, String> = emptyMap()
@@ -23,6 +41,14 @@ abstract class ServiceClient(protected val client: HttpClient) {
                 .body()
     }
 
+    /**
+     * Performs an HTTP POST request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param body Optional request body to send (will be serialized to JSON)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     */
     protected suspend inline fun <reified T> post(
             endpoint: String,
             body: Any? = null,
@@ -37,6 +63,14 @@ abstract class ServiceClient(protected val client: HttpClient) {
                 .body()
     }
 
+    /**
+     * Performs an HTTP PUT request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param body Optional request body to send (will be serialized to JSON)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     */
     protected suspend inline fun <reified T> put(
             endpoint: String,
             body: Any? = null,
@@ -51,6 +85,13 @@ abstract class ServiceClient(protected val client: HttpClient) {
                 .body()
     }
 
+    /**
+     * Performs an HTTP DELETE request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     */
     protected suspend inline fun <reified T> delete(
             endpoint: String,
             headers: Map<String, String> = emptyMap()
@@ -62,6 +103,14 @@ abstract class ServiceClient(protected val client: HttpClient) {
                 .body()
     }
 
+    /**
+     * Performs an HTTP PATCH request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param body Optional request body to send (will be serialized to JSON)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     */
     protected suspend inline fun <reified T> patch(
             endpoint: String,
             body: Any? = null,
@@ -77,6 +126,14 @@ abstract class ServiceClient(protected val client: HttpClient) {
     }
 }
 
-/** Exception thrown when a service request fails */
+/**
+ * Exception thrown when a service request fails.
+ *
+ * This exception captures the HTTP status code and error response body
+ * to provide detailed information about the failure.
+ *
+ * @property statusCode The HTTP status code of the failed request
+ * @property errorBody The error response body as a string
+ */
 class ServiceException(val statusCode: Int, val errorBody: String) :
         RuntimeException("Service request failed with status $statusCode: $errorBody")

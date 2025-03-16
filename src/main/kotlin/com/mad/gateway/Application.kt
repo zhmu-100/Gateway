@@ -9,6 +9,13 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Main entry point for the MAD Gateway application.
+ *
+ * This function initializes and starts the Ktor server with the Netty engine.
+ * It loads configuration from application.conf and starts the server on the
+ * configured port (or 8080 by default).
+ */
 fun main() {
     // Load configuration from application.conf
     val config = ApplicationConfig("application.conf")
@@ -20,6 +27,17 @@ fun main() {
             .start(wait = true)
 }
 
+/**
+ * Application module configuration function.
+ *
+ * This function configures all aspects of the Ktor application:
+ * - Serialization for request/response handling
+ * - Monitoring for logging and metrics
+ * - Security for authentication and authorization
+ * - Dependency injection with Koin
+ * - HTTP client for communicating with backend services
+ * - Routing for defining API endpoints
+ */
 fun Application.module() {
     // Log application startup
     logger.info { "Initializing MAD Gateway" }

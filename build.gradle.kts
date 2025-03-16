@@ -12,6 +12,7 @@ plugins {
     id("io.ktor.plugin") version "2.3.7"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("org.jetbrains.dokka") version "1.9.10"
 }
 
 group = "com.mad"
@@ -31,6 +32,49 @@ tasks {
         archiveClassifier.set("")
         archiveVersion.set("${project.version}")
         mergeServiceFiles()
+    }
+
+    dokkaHtml {
+        outputDirectory.set(file("${buildDir}/dokka"))
+
+        // Configure Dokka
+        dokkaSourceSets {
+            named("main") {
+                moduleName.set("MAD Gateway")
+                includes.from("Module.md")
+
+                // Link to Ktor API docs
+                externalDocumentationLink {
+                    url.set(uri("https://api.ktor.io/").toURL())
+                    packageListUrl.set(uri("https://api.ktor.io/package-list").toURL())
+                }
+
+                // Link to Kotlin standard library
+                externalDocumentationLink {
+                    url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/").toURL())
+                    packageListUrl.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL())
+                }
+
+                // Source link to GitHub
+                sourceLink {
+                    localDirectory.set(file("src/main/kotlin"))
+                    remoteUrl.set(uri("https://github.com/zhmu-100/Gateway/").toURL())
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
+
+    // Custom task to generate documentation
+    register("generateDocs") {
+        dependsOn("dokkaHtml")
+        group = "documentation"
+        description = "Generates Dokka HTML documentation"
+
+        doLast {
+            println("Documentation generated in ${buildDir}/dokka")
+            println("Open ${buildDir}/dokka/index.html to view the documentation")
+        }
     }
 }
 
