@@ -102,7 +102,7 @@ fun Route.notesRoutes() {
 
                             loggingService.logInfo(
                                     "Note created: ${createdNote.title}",
-                                    mapOf("userId" to userId!!, "noteId" to createdNote.id!!)
+                                    mapOf("userId" to userId, "noteId" to createdNote.id!!)
                             )
                         } else {
                             call.respond(
@@ -147,7 +147,7 @@ fun Route.notesRoutes() {
 
                             loggingService.logInfo(
                                     "Note updated: ${updatedNote.title}",
-                                    mapOf("userId" to userId!!, "noteId" to id!!)
+                                    mapOf("userId" to userId, "noteId" to id!!)
                             )
                         } else {
                             call.respond(
@@ -187,7 +187,7 @@ fun Route.notesRoutes() {
 
                             loggingService.logInfo(
                                     "Note deleted",
-                                    mapOf("userId" to userId!!, "noteId" to id!!)
+                                    mapOf("userId" to userId, "noteId" to id!!)
                             )
                         } else {
                             call.respond(
@@ -301,7 +301,7 @@ fun Route.notesRoutes() {
                             loggingService.logInfo(
                                     "Notification created: ${createdNotification.title}",
                                     mapOf(
-                                            "userId" to userId!!,
+                                            "userId" to userId,
                                             "notificationId" to createdNotification.id!!
                                     )
                             )

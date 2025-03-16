@@ -98,7 +98,7 @@ fun Route.trainingRoutes() {
 
                         loggingService.logInfo(
                                 "Workout created: ${createdWorkout.name}",
-                                mapOf("userId" to userId!!, "workoutId" to createdWorkout.id!!)
+                                mapOf("userId" to userId, "workoutId" to createdWorkout.id!!)
                         )
                     } else {
                         call.respond(
@@ -143,7 +143,7 @@ fun Route.trainingRoutes() {
 
                         loggingService.logInfo(
                                 "Workout updated: ${updatedWorkout.name}",
-                                mapOf("userId" to userId!!, "workoutId" to id!!)
+                                mapOf("userId" to userId, "workoutId" to id!!)
                         )
                     } else {
                         call.respond(
@@ -183,7 +183,7 @@ fun Route.trainingRoutes() {
 
                         loggingService.logInfo(
                                 "Workout deleted",
-                                mapOf("userId" to userId!!, "workoutId" to id!!)
+                                mapOf("userId" to userId, "workoutId" to id!!)
                         )
                     } else {
                         call.respond(
@@ -217,7 +217,7 @@ fun Route.trainingRoutes() {
 
                         loggingService.logInfo(
                                 "Custom workout created: ${workout.name}",
-                                mapOf("userId" to userId!!, "workoutId" to response.id!!)
+                                mapOf("userId" to userId, "workoutId" to response.id!!)
                         )
                     } else {
                         call.respond(

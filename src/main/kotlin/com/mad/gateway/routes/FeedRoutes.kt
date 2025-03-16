@@ -92,7 +92,7 @@ fun Route.feedRoutes() {
 
                             loggingService.logInfo(
                                     "Post created",
-                                    mapOf("userId" to userId!!, "postId" to createdPost.id!!)
+                                    mapOf("userId" to userId, "postId" to createdPost.id!!)
                             )
                         } else {
                             call.respond(
@@ -170,7 +170,7 @@ fun Route.feedRoutes() {
                                 loggingService.logInfo(
                                         "Comment created",
                                         mapOf(
-                                                "userId" to userId!!,
+                                                "userId" to userId,
                                                 "postId" to postId!!,
                                                 "commentId" to createdComment.id!!
                                         )
@@ -266,7 +266,7 @@ fun Route.feedRoutes() {
 
                                 loggingService.logInfo(
                                         "Reaction removed",
-                                        mapOf("userId" to userId!!, "postId" to postId!!)
+                                        mapOf("userId" to userId, "postId" to postId!!)
                                 )
                             } else {
                                 call.respond(

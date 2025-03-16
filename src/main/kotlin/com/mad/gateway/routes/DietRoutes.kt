@@ -76,7 +76,7 @@ fun Route.dietRoutes() {
 
                             loggingService.logInfo(
                                     "Food created: ${createdFood.name}",
-                                    mapOf("userId" to userId!!, "foodId" to createdFood.id!!)
+                                    mapOf("userId" to userId, "foodId" to createdFood.id!!)
                             )
                         } else {
                             call.respond(
@@ -169,7 +169,7 @@ fun Route.dietRoutes() {
 
                             loggingService.logInfo(
                                     "Meal created: ${createdMeal.name}",
-                                    mapOf("userId" to userId!!, "mealId" to createdMeal.id!!)
+                                    mapOf("userId" to userId, "mealId" to createdMeal.id!!)
                             )
                         } else {
                             call.respond(
