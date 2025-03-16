@@ -11,6 +11,7 @@ plugins {
     kotlin("jvm") version "1.9.22"
     id("io.ktor.plugin") version "2.3.7"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "com.mad"
@@ -22,6 +23,15 @@ application {
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+tasks {
+    shadowJar {
+        archiveBaseName.set("gateway")
+        archiveClassifier.set("")
+        archiveVersion.set("${project.version}")
+        mergeServiceFiles()
+    }
 }
 
 repositories {

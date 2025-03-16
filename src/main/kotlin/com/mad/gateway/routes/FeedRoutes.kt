@@ -171,7 +171,7 @@ fun Route.feedRoutes() {
                                         "Comment created",
                                         mapOf(
                                                 "userId" to userId,
-                                                "postId" to postId!!,
+                                                "postId" to postId,
                                                 "commentId" to createdComment.id!!
                                         )
                                 )
@@ -266,7 +266,7 @@ fun Route.feedRoutes() {
 
                                 loggingService.logInfo(
                                         "Reaction removed",
-                                        mapOf("userId" to userId, "postId" to postId!!)
+                                        mapOf("userId" to userId, "postId" to postId)
                                 )
                             } else {
                                 call.respond(

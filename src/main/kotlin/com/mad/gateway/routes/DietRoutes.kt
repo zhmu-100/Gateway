@@ -24,12 +24,14 @@ fun Route.dietRoutes() {
             // Get food by ID
             get("/{id}") {
                 try {
-                    val id =
-                            call.parameters["id"]
-                                    ?: return@get call.respond(
-                                            HttpStatusCode.BadRequest,
-                                            mapOf("error" to "Missing ID parameter")
-                                    )
+                    val id = call.parameters["id"]
+                    if (id == null) {
+                        call.respond(
+                                HttpStatusCode.BadRequest,
+                                mapOf("error" to "Missing ID parameter")
+                        )
+                        return@get
+                    }
 
                     val food = dietService.getFood(id)
                     call.respond(food)
@@ -104,12 +106,14 @@ fun Route.dietRoutes() {
             // Get meal by ID
             get("/{id}") {
                 try {
-                    val id =
-                            call.parameters["id"]
-                                    ?: return@get call.respond(
-                                            HttpStatusCode.BadRequest,
-                                            mapOf("error" to "Missing ID parameter")
-                                    )
+                    val id = call.parameters["id"]
+                    if (id == null) {
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Missing ID parameter")
+                        )
+                        return@get
+                    }
 
                     val meal = dietService.getMeal(id)
                     call.respond(meal)
@@ -126,19 +130,23 @@ fun Route.dietRoutes() {
             // List meals within a date range
             get {
                 try {
-                    val startDate =
-                            call.request.queryParameters["startDate"]
-                                    ?: return@get call.respond(
-                                            HttpStatusCode.BadRequest,
-                                            mapOf("error" to "Missing startDate parameter")
-                                    )
+                    val startDate = call.request.queryParameters["startDate"]
+                    if (startDate == null) {
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Missing startDate parameter")
+                        )
+                        return@get
+                    }
 
-                    val endDate =
-                            call.request.queryParameters["endDate"]
-                                    ?: return@get call.respond(
-                                            HttpStatusCode.BadRequest,
-                                            mapOf("error" to "Missing endDate parameter")
-                                    )
+                    val endDate = call.request.queryParameters["endDate"]
+                    if (endDate == null) {
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Missing endDate parameter")
+                        )
+                        return@get
+                    }
 
                     val meals = dietService.listMeals(startDate, endDate)
                     call.respond(meals)
