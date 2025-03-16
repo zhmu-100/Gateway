@@ -182,7 +182,3 @@ The gateway exposes the following API endpoints:
 2. Add the service URL to `application.conf`
 3. Create route definitions in `routes/`
 4. Register the service client in `KoinConfig.kt`
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
