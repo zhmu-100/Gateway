@@ -6,6 +6,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+#      TODO: move to .env
       - AUTH_SERVICE_URL=http://auth-service:8081/auth
       - LOGGING_SERVICE_URL=http://logging-service:8082/api/logging
       - PROFILE_SERVICE_URL=http://profile-service:8083/api/profiles
