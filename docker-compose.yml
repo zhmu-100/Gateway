@@ -36,8 +36,8 @@ services:
     networks:
       - mad-network
 
-  # The following services are placeholders for the actual microservices
-  # In a real environment, these would be replaced with the actual microservice containers
+  # FIXME: The following services are placeholders for the actual microservices
+  # TODO: Move to architecture docker
 
   auth-service:
     image: nginx:alpine
