@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Fast Unit Tests
 
 on:
   push:
@@ -9,40 +9,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: temurin
-          cache: gradle
 
-      - name: Generate Gradle Wrapper
+      - name: Run tests
         run: |
-          # Удаляем старые файлы wrapper
-          rm -f gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar
-
-          # Генерируем новый wrapper
-          echo "Generating Gradle Wrapper..."
-          gradle wrapper --gradle-version 8.5 --distribution-type bin
-
-          # Проверяем создание файлов
-          echo "Verifying files..."
-          [ -f gradlew ] || { echo "gradlew not found!"; exit 1; }
-          [ -f gradle/wrapper/gradle-wrapper.jar ] || { echo "gradle-wrapper.jar not found!"; exit 1; }
-
-          # Даем права на выполнение
           chmod +x gradlew
-
-          # Проверяем целостность jar
-          echo "Validating jar file..."
-          unzip -t gradle/wrapper/gradle-wrapper.jar >/dev/null || { echo "Invalid gradle-wrapper.jar!"; exit 1; }
-          echo "Gradle Wrapper setup completed successfully!"
-
-      - name: Run unit tests
-        run: ./gradlew test --no-daemon --stacktrace
+          ./gradlew test --no-daemon --scan --parallel --max-workers=2
