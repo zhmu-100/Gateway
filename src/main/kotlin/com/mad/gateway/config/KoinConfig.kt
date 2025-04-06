@@ -29,6 +29,7 @@ fun appModule(application: Application) = module {
     single { FeedServiceClient(get()) }
     single { NotesServiceClient(get()) }
     single { StatisticsServiceClient(get()) }
+    single { DBServiceClient(get()) }
 
     // File service client with URL from config
     single {

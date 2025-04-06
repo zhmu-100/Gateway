@@ -8,8 +8,8 @@ import io.ktor.server.routing.*
 /**
  * Configures the routing for the application.
  *
- * This function sets up all API routes for the gateway, organizing them into logical groups.
- * It includes:
+ * This function sets up all API routes for the gateway, organizing them into logical groups. It
+ * includes:
  * - A health check endpoint for monitoring
  * - API routes grouped by service domain
  *
@@ -45,6 +45,9 @@ fun Application.configureRouting() {
 
             // File routes
             fileRoutes()
+
+            // Database routes
+            dbRoutes()
         }
     }
 }

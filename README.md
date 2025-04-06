@@ -15,7 +15,8 @@ The MAD Gateway connects mobile clients to the following microservices:
 7. **Notes Service** - User notes and notifications
 8. **Statistics Service** - User statistics and workout data (GPS, heart rate, etc.)
 9. **File Service** - File storage using MinIO
-10. **Redis Message Broker** - Inter-service communication
+10. **DB Service** - PostgreSQL database service for direct database operations
+11. **Redis Message Broker** - Inter-service communication
 
 ## Features
 
@@ -76,7 +77,7 @@ Configuration is managed through the `application.conf` file and environment var
 
 - **Port**: `PORT` (default: 8080)
 - **JWT**: `JWT_SECRET`, `JWT_ISSUER`, `JWT_AUDIENCE`
-- **Service URLs**: Environment variables for each service URL
+- **Service URLs**: Environment variables for each service URL (auth, profile, training, diet, feed, notes, statistics, file, db)
 - **Redis**: `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`
 
 ## API Documentation
@@ -162,6 +163,13 @@ The gateway exposes the following API endpoints:
 - `GET /api/files/{id}/url` - Get file URL
 - `POST /api/files/upload` - Upload a file
 - `POST /api/files/fix-upload/{id}` - Replace an existing file
+
+### Database
+
+- `POST /api/db/create` - Create a new record in a specified table
+- `POST /api/db/read` - Execute a custom SQL query with parameters
+- `POST /api/db/update` - Update records in a specified table with conditions
+- `POST /api/db/delete` - Delete records from a specified table with conditions
 
 ## Development
 
