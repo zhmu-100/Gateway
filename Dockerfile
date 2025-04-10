@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . /app/
 RUN gradle build --no-daemon
 
-FROM openjdk:17-slim
+FROM liberica-openjdk-alpine:18
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/gateway.jar
 
@@ -23,7 +23,7 @@ ENV REDIS_HOST=redis
 ENV REDIS_PORT=6379
 
 # Environment variables for JWT
-ENV JWT_SECRET=change_this_in_production
+ENV JWT_SECRET=uXze_D0R-JcW9xqRE7p0ycq3pn56twM2tX0Krn0L9v1o5hc2d-cSP8JthSh9kP3G
 ENV JWT_ISSUER=com.mad.gateway
 ENV JWT_AUDIENCE=mad-mobile-app
 
