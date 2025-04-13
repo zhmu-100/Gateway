@@ -14,9 +14,6 @@ private val logger = KotlinLogging.logger {}
 
 /** Configure security for the application */
 fun Application.configureSecurity() {
-    // Access environment explicitly through this reference
-    val appEnvironment = environment
-
     // Configure CORS
     install(CORS) {
         allowMethod(HttpMethod.Options)
@@ -33,14 +30,22 @@ fun Application.configureSecurity() {
         logger.info { "CORS configured to allow requests from any host" }
     }
 
+    // Get JWT configuration from environment variables
+    val jwtSecret =
+            System.getenv("JWT_SECRET")
+                    ?: throw IllegalStateException("JWT_SECRET environment variable is not set")
+    val jwtIssuer =
+            System.getenv("JWT_ISSUER")
+                    ?: throw IllegalStateException("JWT_ISSUER environment variable is not set")
+    val jwtAudience =
+            System.getenv("JWT_AUDIENCE")
+                    ?: throw IllegalStateException("JWT_AUDIENCE environment variable is not set")
+
+    logger.info { "JWT configuration loaded from environment variables" }
+
     // Configure JWT Authentication
     authentication {
         jwt("auth-jwt") {
-            // Get JWT configuration from application.conf
-            val jwtSecret = appEnvironment.config.property("jwt.secret").getString()
-            val jwtIssuer = appEnvironment.config.property("jwt.issuer").getString()
-            val jwtAudience = appEnvironment.config.property("jwt.audience").getString()
-
             realm = "MAD Gateway"
 
             verifier(

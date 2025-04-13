@@ -1,11 +1,12 @@
-FROM gradle:7.6.1-jdk17 AS build
+FROM gradle:8.13.0-jdk17 AS build
 WORKDIR /app
 COPY . /app/
 RUN gradle build --no-daemon
 
-FROM liberica-openjdk-alpine:18
+FROM openjdk:17-slim
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/gateway.jar
+COPY --from=build /app/src/main/resources/application.conf /app/application.conf
 
 # Environment variables for service URLs
 ENV AUTH_SERVICE_URL=http://auth-service:8081/auth
@@ -32,4 +33,4 @@ RUN mkdir -p /app/logs
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/gateway.jar"]
+ENTRYPOINT ["java", "-Dconfig.file=/app/application.conf", "-jar", "/app/gateway.jar"]

@@ -109,8 +109,8 @@ fun Route.dietRoutes() {
                     val id = call.parameters["id"]
                     if (id == null) {
                         call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Missing ID parameter")
+                                HttpStatusCode.BadRequest,
+                                mapOf("error" to "Missing ID parameter")
                         )
                         return@get
                     }
@@ -133,8 +133,8 @@ fun Route.dietRoutes() {
                     val startDate = call.request.queryParameters["startDate"]
                     if (startDate == null) {
                         call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Missing startDate parameter")
+                                HttpStatusCode.BadRequest,
+                                mapOf("error" to "Missing startDate parameter")
                         )
                         return@get
                     }
@@ -142,8 +142,8 @@ fun Route.dietRoutes() {
                     val endDate = call.request.queryParameters["endDate"]
                     if (endDate == null) {
                         call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Missing endDate parameter")
+                                HttpStatusCode.BadRequest,
+                                mapOf("error" to "Missing endDate parameter")
                         )
                         return@get
                     }

@@ -110,8 +110,8 @@ fun Route.authRoutes() {
          *
          * POST /api/auth/logout
          *
-         * Invalidates the user's refresh token, requiring re-authentication.
-         * Requires a valid JWT token.
+         * Invalidates the user's refresh token, requiring re-authentication. Requires a valid JWT
+         * token.
          */
         authenticate("auth-jwt") {
             post("/logout") {
@@ -142,8 +142,7 @@ fun Route.authRoutes() {
          *
          * GET /api/auth/validate
          *
-         * Validates the current JWT token and returns user information.
-         * Requires a valid JWT token.
+         * Validates the current JWT token and returns user information. Requires a valid JWT token.
          */
         authenticate("auth-jwt") {
             get("/validate") {
