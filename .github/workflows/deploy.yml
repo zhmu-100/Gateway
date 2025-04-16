@@ -52,22 +52,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.service-name }}-artifacts.zip
+          name: ${{ inputs.service-name }}-artifacts
           path: ./artifacts
-
-      - name: List all files
-        run: |
-          echo "Listing all files:"
-          ls -l ./  # List all files in the current directory
-          echo "Listing files in artifacts directory:"
-          ls -l ./artifacts  # List files to verify download
-          echo "Listing files in build directory:"
-          ls -l ./build  # List files to verify download
-
-      - name: Unzip artifacts
-        run: |
-          unzip ./artifacts/${{ inputs.service-name }}-artifacts.zip -d ./artifacts
-          ls -l ./artifacts  # List files to verify extraction
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -91,7 +77,7 @@ jobs:
           build-args: |
             SERVICE_NAME=${{ inputs.service-name }}
             SERVICE_VERSION=${{ inputs.version }}
-            JAR_FILE=./artifacts/${{ inputs.service-name }}-${{ inputs.version }}.jar
+            JAR_FILE=./artifacts/${{ inputs.service-name }}-all.jar
 
       - name: Prepare deployment files
         run: |
