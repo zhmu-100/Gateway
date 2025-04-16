@@ -82,7 +82,7 @@ jobs:
       - name: Prepare deployment files
         run: |
           mkdir -p deploy
-          cp docker/docker-compose-template.yml deploy/docker-compose.yml
+          cp docker/docker compose-template.yml deploy/docker compose.yml
           cp -r config/${{ inputs.environment }}/* deploy/
           cat > deploy/.env << EOF
           REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}
@@ -105,7 +105,7 @@ jobs:
           # Copy deployment files
           scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C deploy/* deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
           # Pull images and start services
-          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker-compose pull -q && docker-compose up -d"
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker compose pull -q && docker compose up -d"
 
       - name: Verify deployment
         run: |

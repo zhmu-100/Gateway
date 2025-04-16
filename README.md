@@ -66,7 +66,7 @@ The gateway will be available at <http://localhost:8080>.
 1. Build and run using Docker Compose:
 
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 This will start the gateway and all required services in containers.
