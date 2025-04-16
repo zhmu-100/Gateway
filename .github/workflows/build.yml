@@ -46,11 +46,8 @@ jobs:
 
       - name: Setup Gradle Wrapper
         run: |
-          if [ ! -f "./gradlew" ]; then
-            gradle wrapper --gradle-version 8.10
-          else
-            chmod +x gradlew
-          fi
+          chmod +x gradlew
+          gradle wrapper --gradle-version 8.10
 
       - name: Build with Gradle
         run: ./gradlew ${{ inputs.gradle-task }} --no-daemon
