@@ -98,8 +98,8 @@ jobs:
 
       - name: Deploy to server
         run: |
-          scp -r -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C deploy/* deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
-          ssh -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker-compose pull -q && docker-compose up -d"
+          scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C deploy/* deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker-compose pull -q && docker-compose up -d"
 
       - name: Verify deployment
         run: |
