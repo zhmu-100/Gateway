@@ -44,15 +44,15 @@ jobs:
           gradle wrapper --gradle-version 8.10
 
       - name: Run unit tests
-        run: ./gradlew ${{ inputs.service-name }}:test
+        run: ./gradlew test
 
       - name: Run integration tests
         if: ${{ inputs.run-integration-tests }}
-        run: ./gradlew ${{ inputs.service-name }}:integrationTest
+        run: ./gradlew integrationTest
         continue-on-error: true
 
       - name: Generate test reports
-        run: ./gradlew ${{ inputs.service-name }}:jacocoTestReport
+        run: ./gradlew jacocoTestReport
 
       - name: Set test status
         id: set-status
