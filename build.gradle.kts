@@ -19,6 +19,13 @@ group = "com.mad"
 
 version = "0.0.1"
 
+// Configure Java toolchain
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 application {
     mainClass.set("com.mad.gateway.ApplicationKt")
 
@@ -75,6 +82,10 @@ tasks {
             println("Documentation generated in ${buildDir}/dokka")
             println("Open ${buildDir}/dokka/index.html to view the documentation")
         }
+    }
+
+    wrapper {
+        gradleVersion = "8.10"
     }
 }
 

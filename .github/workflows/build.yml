@@ -41,10 +41,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: wrapper
+          gradle-version: '8.10'
+          arguments: --no-daemon
 
       - name: Build with Gradle
-        run: ./gradlew ${{ inputs.gradle-task }}
+        run: ./gradlew ${{ inputs.gradle-task }} --no-daemon
 
       - name: Set build timestamp
         id: set-timestamp
