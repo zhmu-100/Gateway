@@ -105,6 +105,16 @@ jobs:
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "rm -rf /opt/deployment/${{ inputs.service-name }}/*"
           # Copy deployment files
           scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C deploy/* deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
+          # Create .env file directly on server to avoid any transfer issues
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cat > /opt/deployment/${{ inputs.service-name }}/.env << EOF
+          REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}
+          SERVICE_NAME=${{ inputs.service-name }}
+          SERVICE_VERSION=${{ inputs.version }}
+          DEPLOYMENT_ENV=${{ inputs.environment }}
+          SERVICE_PORT=8080
+          EOF"
+          # Verify .env file exists
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "ls -la /opt/deployment/${{ inputs.service-name }}/"
           # Pull images and start services
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker compose --env-file .env pull -q && docker compose --env-file .env up -d"
 
