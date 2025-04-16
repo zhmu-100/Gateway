@@ -84,15 +84,13 @@ jobs:
           mkdir -p deploy
           cp docker/docker-compose-template.yml deploy/docker-compose.yml
           cp -r config/${{ inputs.environment }}/* deploy/
-          # Create .env for Compose variable substitution
           cat > deploy/.env << EOF
           REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}
           SERVICE_NAME=${{ inputs.service-name }}
           SERVICE_VERSION=${{ inputs.version }}
           DEPLOYMENT_ENV=${{ inputs.environment }}
+          SERVICE_PORT=8080
           EOF
-          # Append service-specific env (e.g., SERVICE_PORT) into .env
-          cat deploy/${{ inputs.service-name }}.env >> deploy/.env
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -108,7 +106,7 @@ jobs:
           # Copy deployment files
           scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C deploy/* deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
           # Pull images and start services
-          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker compose pull -q && docker compose up -d"
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker compose --env-file .env pull -q && docker compose --env-file .env up -d"
 
       - name: Verify deployment
         run: |

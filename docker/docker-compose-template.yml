@@ -1,22 +1,22 @@
 version: "3.8"
 
 services:
-  ${SERVICE_NAME}:
-    image: ${REGISTRY}/${SERVICE_NAME}:${SERVICE_VERSION}
-    container_name: ${SERVICE_NAME}
+  app:
+    image: ${REGISTRY:-localhost}/${SERVICE_NAME:-gateway}:${SERVICE_VERSION:-latest}
+    container_name: ${SERVICE_NAME:-gateway}
     restart: always
     environment:
-      - SERVICE_ENV=${DEPLOYMENT_ENV}
+      - SERVICE_ENV=${DEPLOYMENT_ENV:-development}
       - JAVA_OPTS=-Xmx512m -Xms256m
       # Additional environment variables will be loaded from env file
     env_file:
-      - ./${SERVICE_NAME}.env
+      - ./${SERVICE_NAME:-gateway}.env
     ports:
-      - "${SERVICE_PORT}:8080"
+      - "${SERVICE_PORT:-8080}:8080"
     volumes:
-      - ${SERVICE_NAME}-data:/app/data
-      - ${SERVICE_NAME}-logs:/app/logs
-      - ./config/${DEPLOYMENT_ENV}/${SERVICE_NAME}.conf:/app/config/application.conf
+      - app-data:/app/data
+      - app-logs:/app/logs
+      - ./config/${DEPLOYMENT_ENV:-development}/${SERVICE_NAME:-gateway}.conf:/app/config/application.conf
     networks:
       - app-network
     healthcheck:
@@ -40,7 +40,7 @@ networks:
     external: true
 
 volumes:
-  ${SERVICE_NAME}-data:
-    name: ${SERVICE_NAME}-data-${DEPLOYMENT_ENV}
-  ${SERVICE_NAME}-logs:
-    name: ${SERVICE_NAME}-logs-${DEPLOYMENT_ENV}
+  app-data:
+    name: ${SERVICE_NAME:-gateway}-data-${DEPLOYMENT_ENV:-development}
+  app-logs:
+    name: ${SERVICE_NAME:-gateway}-logs-${DEPLOYMENT_ENV:-development}
