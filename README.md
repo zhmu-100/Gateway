@@ -1,6 +1,6 @@
 # MAD Gateway Service
 
-A Kotlin/Ktor-based API Gateway for the MAD (Mobile Athletic Development) microservices architecture. This gateway serves as the entry point for mobile clients to communicate with the backend microservices.
+A KTOR-based API Gateway for the MAD (Mobile Athletic Development) microservices architecture. This gateway serves as the entry point for mobile clients to communicate with the backend microservices.
 
 ## Architecture
 
