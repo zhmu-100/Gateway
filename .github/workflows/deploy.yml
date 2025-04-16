@@ -55,6 +55,15 @@ jobs:
           name: ${{ inputs.service-name }}-artifacts.zip
           path: ./artifacts
 
+      - name: List all files
+        run: |
+          echo "Listing all files:"
+          ls -l ./  # List all files in the current directory
+          echo "Listing files in artifacts directory:"
+          ls -l ./artifacts  # List files to verify download
+          echo "Listing files in build directory:"
+          ls -l ./build  # List files to verify download
+
       - name: Unzip artifacts
         run: |
           unzip ./artifacts/${{ inputs.service-name }}-artifacts.zip -d ./artifacts
