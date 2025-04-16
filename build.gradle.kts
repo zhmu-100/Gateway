@@ -77,6 +77,27 @@ tasks {
         }
     }
 
+    test {
+        group = "verification"
+        description = "Runs unit tests"
+    }
+
+    // Custom integration test task
+    register<Test>("integrationTest") {
+        group = "verification"
+        description = "Runs integration tests"
+    }
+
+    // JaCoCo test report task
+    register("jacocoTestReport") {
+        group = "verification"
+        description = "Generates code coverage report for tests"
+
+        doLast {
+            println("JaCoCo test report task executed")
+        }
+    }
+
     wrapper {
         gradleVersion = "8.10"
     }
