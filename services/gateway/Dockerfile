@@ -1,4 +1,4 @@
-FROM infrastructure/base:kotlin
+FROM openjdk:17-slim
 
 ARG SERVICE_NAME=gateway
 ARG SERVICE_VERSION=latest

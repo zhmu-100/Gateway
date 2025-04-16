@@ -23,7 +23,7 @@ mkdir -p $WORKSPACE/services/$SERVICE_NAME
 # Create Dockerfile
 echo "Creating Dockerfile..."
 cat >$WORKSPACE/services/$SERVICE_NAME/Dockerfile <<EOL
-FROM infrastructure/base:kotlin
+FROM openjdk:17-slim
 
 ARG SERVICE_NAME=$SERVICE_NAME
 ARG SERVICE_VERSION=latest
