@@ -33,7 +33,7 @@ export SERVICE_PORT=$(grep "SERVICE_PORT" $WORKSPACE/config/$ENVIRONMENT/$SERVIC
 # Copy configuration files
 echo "Copying configuration files..."
 cp $WORKSPACE/config/$ENVIRONMENT/$SERVICE_NAME.env $DEPLOY_DIR/
-cp $WORKSPACE/docker/docker compose-template.yml $DEPLOY_DIR/docker compose.yml
+cp $WORKSPACE/docker/docker compose-template.yml $DEPLOY_DIR/docker-compose.yml
 
 # Ensure necessary directories exist
 mkdir -p $DEPLOY_DIR/config/$ENVIRONMENT
@@ -42,8 +42,8 @@ cp -r $WORKSPACE/config/$ENVIRONMENT/$SERVICE_NAME.* $DEPLOY_DIR/config/$ENVIRON
 # Process docker compose template with environment variables
 echo "Processing docker compose template..."
 cd $DEPLOY_DIR
-envsubst <docker compose.yml >docker compose.processed.yml
-mv docker compose.processed.yml docker compose.yml
+envsubst <docker-compose.yml >docker compose.processed.yml
+mv docker compose.processed.yml docker-compose.yml
 
 # Pull the latest image
 echo "Pulling latest image: $REGISTRY/$SERVICE_NAME:$VERSION"
