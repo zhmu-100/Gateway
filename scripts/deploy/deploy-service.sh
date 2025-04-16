@@ -33,7 +33,7 @@ export SERVICE_PORT=$(grep "SERVICE_PORT" $WORKSPACE/config/$ENVIRONMENT/$SERVIC
 # Copy configuration files
 echo "Copying configuration files..."
 cp $WORKSPACE/config/$ENVIRONMENT/$SERVICE_NAME.env $DEPLOY_DIR/
-cp $WORKSPACE/docker/docker compose-template.yml $DEPLOY_DIR/docker-compose.yml
+cp $WORKSPACE/docker/docker-compose-template.yml $DEPLOY_DIR/docker-compose.yml
 
 # Ensure necessary directories exist
 mkdir -p $DEPLOY_DIR/config/$ENVIRONMENT
