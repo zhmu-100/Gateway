@@ -83,3 +83,5 @@ jobs:
           git tag ${{ steps.bump-version.outputs.version-tag }}
           git push origin ${{ steps.bump-version.outputs.version-tag }}
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
