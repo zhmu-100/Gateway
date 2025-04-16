@@ -128,12 +128,12 @@ name: $SERVICE_NAME CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     paths:
       - '$SERVICE_NAME/**'
       - '.github/workflows/service-specific/$SERVICE_NAME.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     paths:
       - '$SERVICE_NAME/**'
   workflow_dispatch:

@@ -2,12 +2,12 @@ name: Gateway Service CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     paths:
       - 'gateway/**'
       - '.github/workflows/gateway.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     paths:
       - 'gateway/**'
   workflow_dispatch:
