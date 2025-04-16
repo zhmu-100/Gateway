@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   app:
     image: ${REGISTRY:-localhost}/${SERVICE_NAME:-gateway}:${SERVICE_VERSION:-latest}

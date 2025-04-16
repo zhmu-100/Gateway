@@ -133,6 +133,8 @@ jobs:
           EOF"
           # Verify .env file exists
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "ls -la /opt/deployment/${{ inputs.service-name }}/"
+          # Create the required external network if it doesn't exist
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "docker network inspect app-network >/dev/null 2>&1 || docker network create app-network"
           # Pull images and start services
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker compose --env-file .env pull -q && docker compose --env-file .env up -d"
 
