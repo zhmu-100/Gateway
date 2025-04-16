@@ -65,6 +65,18 @@ jobs:
           username: ${{ inputs.registry-username }}
           password: ${{ secrets.registry-token }}
 
+      - name: Create Docker auth config for remote server
+        run: |
+          mkdir -p deploy/docker-auth
+          # Create auth config specifically for the target registry
+          echo '{
+            "auths": {
+              "${{ inputs.registry }}": {
+                "auth": "'$(echo -n "${{ inputs.registry-username }}:${{ secrets.registry-token }}" | base64)'"
+              }
+            }
+          }' > deploy/docker-auth/config.json
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -101,6 +113,12 @@ jobs:
         run: |
           # Ensure target directory exists
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "mkdir -p /opt/deployment/${{ inputs.service-name }}"
+          # Create docker config directory on remote server if it doesn't exist
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "mkdir -p ~/.docker"
+          # Copy Docker auth config to remote server
+          scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C deploy/docker-auth/config.json deploy@${{ secrets.deploy-host }}:~/.docker/config.json
+          # Set proper permissions for Docker config
+          ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "chmod 600 ~/.docker/config.json"
           # Clean target directory
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "rm -rf /opt/deployment/${{ inputs.service-name }}/*"
           # Copy deployment files
