@@ -55,6 +55,11 @@ jobs:
           name: ${{ inputs.service-name }}-artifacts
           path: ./artifacts
 
+      - name: Unzip artifacts
+        run: |
+          unzip ./artifacts/${{ inputs.service-name }}-artifacts.zip -d ./artifacts
+          ls -l ./artifacts  # List files to verify extraction
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
