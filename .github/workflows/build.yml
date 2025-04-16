@@ -1,0 +1,53 @@
+name: Build Service
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+        description: "Name of the service to build"
+      java-version:
+        required: false
+        type: string
+        default: '17'
+        description: "Java version to use"
+      gradle-task:
+        required: false
+        type: string
+        default: 'build'
+        description: "Gradle task to run"
+    outputs:
+      build-timestamp:
+        description: "Timestamp when the build was completed"
+        value: ${{ jobs.build.outputs.build-timestamp }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      build-timestamp: ${{ steps.set-timestamp.outputs.timestamp }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build with Gradle
+        run: ./gradlew ${{ inputs.service-name }}:${{ inputs.gradle-task }}
+
+      - name: Set build timestamp
+        id: set-timestamp
+        run: echo "timestamp=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.service-name }}-artifacts
+          path: ${{ inputs.service-name }}/build/libs
+          retention-days: 7

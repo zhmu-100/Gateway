@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  ${SERVICE_NAME}:
+    image: ${REGISTRY}/${SERVICE_NAME}:${SERVICE_VERSION}
+    container_name: ${SERVICE_NAME}
+    restart: always
+    environment:
+      - SERVICE_ENV=${DEPLOYMENT_ENV}
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      # Additional environment variables will be loaded from env file
+    env_file:
+      - ./${SERVICE_NAME}.env
+    ports:
+      - "${SERVICE_PORT}:8080"
+    volumes:
+      - ${SERVICE_NAME}-data:/app/data
+      - ${SERVICE_NAME}-logs:/app/logs
+      - ./config/${DEPLOYMENT_ENV}/${SERVICE_NAME}.conf:/app/config/application.conf
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Service-specific dependencies will be added by the deployment script
+    # depends_on:
+    #   - service1
+    #   - service2
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  ${SERVICE_NAME}-data:
+    name: ${SERVICE_NAME}-data-${DEPLOYMENT_ENV}
+  ${SERVICE_NAME}-logs:
+    name: ${SERVICE_NAME}-logs-${DEPLOYMENT_ENV}

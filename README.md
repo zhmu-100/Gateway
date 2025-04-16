@@ -43,8 +43,8 @@ The MAD Gateway connects mobile clients to the following microservices:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-org/mad-gateway.git
-   cd mad-gateway
+   git clone git@github.com:zhmu-100/Gateway.git
+   cd Gateway
    ```
 
 2. Build the project:

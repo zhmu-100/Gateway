@@ -1,0 +1,87 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - "rules/*.yml"
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "gateway"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["gateway:8080"]
+
+  - job_name: "clickhouse-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://clickhouse-service:8080"]
+
+  - job_name: "db-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://db-service:8080"]
+
+  - job_name: "profile-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://profile-service:8083/api/profiles"]
+
+  - job_name: "stats-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://statistics-service:8088/api/statistics"]
+
+  - job_name: "file-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://file-service:8089/api/files"]
+
+  - job_name: "workout-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://training-service:8084/api/training"]
+
+  - job_name: "ration-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://diet-service:8087/api/diet"]
+
+  - job_name: "feed-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://feed-service:8085/api/feed"]
+
+  - job_name: "notes-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://notes-service:8086/api/notebook"]
+
+  - job_name: "push-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://push-service:8080"]
+
+  - job_name: "redis"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["redis:6379"]
+
+  - job_name: "log-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://logging-service:8082/api/logging"]
+
+  - job_name: "auth-service"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["http://auth-service:8081/auth"]
