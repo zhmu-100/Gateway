@@ -38,8 +38,13 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
       - name: Build with Gradle
-        run: ./gradlew ${{ inputs.service-name }}:${{ inputs.gradle-task }}
+        run: ./gradlew ${{ inputs.gradle-task }}
 
       - name: Set build timestamp
         id: set-timestamp
@@ -49,5 +54,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.service-name }}-artifacts
-          path: ${{ inputs.service-name }}/build/libs
+          path: build/libs
           retention-days: 7
