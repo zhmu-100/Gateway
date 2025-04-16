@@ -98,14 +98,13 @@ jobs:
 
       - name: Deploy to server
         run: |
-          clear
           rsync -avz --quiet --protocol=29 -e "ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o ConnectTimeout=60 -T" deploy/ deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "cd /opt/deployment/${{ inputs.service-name }} && docker-compose pull -q && docker-compose up -d"
 
       - name: Verify deployment
         run: |
           sleep 30
-          ssh -o StrictHostKeyChecking=no deploy@${{ secrets.deploy-host }} "docker ps | grep ${{ inputs.service-name }}"
+          ssh -o StrictHostKeyChecking=no -T deploy@${{ secrets.deploy-host }} "docker ps | grep ${{ inputs.service-name }}"
           if [ $? -eq 0 ]; then
             echo "Deployment successful"
             echo "status=success" >> $GITHUB_OUTPUT
