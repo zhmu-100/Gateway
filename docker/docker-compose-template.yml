@@ -14,7 +14,8 @@ services:
     volumes:
       - app-data:/app/data
       - app-logs:/app/logs
-      - ./config/${DEPLOYMENT_ENV:-development}/${SERVICE_NAME:-gateway}.conf:/app/config/application.conf
+      # - ./config/${DEPLOYMENT_ENV:-development}/${SERVICE_NAME:-gateway}.conf:/app/config/application.conf
+      - ./${SERVICE_NAME}.conf:/app/config/application.conf
     networks:
       - app-network
     healthcheck:
