@@ -13,7 +13,7 @@ COPY ${JAR_FILE} /app/service.jar
 
 # Gateway-specific configurations
 ENV GATEWAY_CONFIG=/app/config/application.conf
-COPY ./config/application/${SERVICE_NAME}/application.conf /app/config/application.conf
+COPY ./config/application/${SERVICE_NAME}/application.conf /app/config/
 
 # Expose gateway's port
 EXPOSE 8080
