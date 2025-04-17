@@ -95,6 +95,8 @@ jobs:
         run: |
           mkdir -p deploy
           cp docker/docker-compose-template.yml deploy/docker-compose.yml
+          # Remove problematic volume mount that conflicts with the Dockerfile
+          sed -i '/- \.\/config\/${DEPLOYMENT_ENV:-development}\/${SERVICE_NAME:-gateway}\.conf:\/app\/config\/application\.conf/d' deploy/docker-compose.yml
           cp -r config/${{ inputs.environment }}/* deploy/
           cat > deploy/.env << EOF
           REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}
