@@ -133,7 +133,9 @@ jobs:
           DEPLOYMENT_ENV=${{ inputs.environment }}
           SERVICE_PORT=8080
           EOF"
-          # Verify .env file exists
+          # Copy .conf file
+          scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C config/${{ inputs.environment }}/${{ inputs.service-name }}.conf deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
+          # Verify files exist
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "ls -la /opt/deployment/${{ inputs.service-name }}/"
           # Create the required external network if it doesn't exist
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "docker network inspect app-network >/dev/null 2>&1 || docker network create app-network"
