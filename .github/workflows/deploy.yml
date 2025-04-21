@@ -95,7 +95,7 @@ jobs:
         run: |
           mkdir -p deploy
           cp docker/docker-compose-template.yml deploy/docker-compose.yml
-          cp config/application/${{ inputs.service-name }}/application.conf deploy/
+          cp config/application/${{ inputs.service-name }}/application.conf deploy/${{ inputs.service-name }}.conf
           cp -r config/${{ inputs.environment }}/* deploy/
           cat > deploy/.env << EOF
           REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}
