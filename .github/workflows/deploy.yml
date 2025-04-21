@@ -95,8 +95,7 @@ jobs:
         run: |
           mkdir -p deploy
           cp docker/docker-compose-template.yml deploy/docker-compose.yml
-          # Remove problematic volume mount that conflicts with the Dockerfile
-          sed -i '/- \.\/config\/${DEPLOYMENT_ENV:-development}\/${SERVICE_NAME:-gateway}\.conf:\/app\/config\/application\.conf/d' deploy/docker-compose.yml
+          cp config/${{ inputs.environment }}/${{ inputs.service-name }}.conf deploy/
           cp -r config/${{ inputs.environment }}/* deploy/
           cat > deploy/.env << EOF
           REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}
@@ -133,8 +132,6 @@ jobs:
           DEPLOYMENT_ENV=${{ inputs.environment }}
           SERVICE_PORT=8080
           EOF"
-          # Copy .conf file
-          scp -r -o LogLevel=ERROR -o StrictHostKeyChecking=no -q -T -o ConnectTimeout=60 -C config/${{ inputs.environment }}/${{ inputs.service-name }}.conf deploy@${{ secrets.deploy-host }}:/opt/deployment/${{ inputs.service-name }}/
           # Verify files exist
           ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -T -q -o ConnectTimeout=60 deploy@${{ secrets.deploy-host }} "ls -la /opt/deployment/${{ inputs.service-name }}/"
           # Create the required external network if it doesn't exist
