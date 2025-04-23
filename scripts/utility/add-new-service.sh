@@ -68,8 +68,8 @@ DB_PASSWORD=dev_password
 
 # Security
 JWT_SECRET=dev_jwt_secret_key_for_development_only
-JWT_ISSUER=sport-tracker-dev
-JWT_AUDIENCE=sport-tracker-users
+JWT_ISSUER=com.mad.gateway
+JWT_AUDIENCE=mad-mobile-app
 
 # Microservice Endpoints
 GATEWAY_URL=http://gateway:8080
@@ -101,8 +101,8 @@ DB_PASSWORD=secure_prod_password_should_be_replaced_with_secrets
 
 # Security
 JWT_SECRET=secure_jwt_secret_key_should_be_replaced_with_secrets
-JWT_ISSUER=sport-tracker-prod
-JWT_AUDIENCE=sport-tracker-users
+JWT_ISSUER=com.mad.gateway
+JWT_AUDIENCE=mad-mobile-app
 
 # Microservice Endpoints
 GATEWAY_URL=http://gateway:8080
