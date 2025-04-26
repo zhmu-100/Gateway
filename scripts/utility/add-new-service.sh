@@ -38,7 +38,7 @@ COPY \${JAR_FILE} /app/service.jar
 
 # Service-specific configurations
 ENV SERVICE_CONFIG=/app/config/application.conf
-COPY ./config/\${SERVICE_NAME}.conf /app/config/application.conf
+COPY ./config/application/\${SERVICE_NAME}/application.conf /app/config/
 
 # Expose service port
 EXPOSE 8080
@@ -46,6 +46,10 @@ EXPOSE 8080
 # Service-specific health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \\
   CMD wget -q --spider http://localhost:8080/health || exit 1
+
+# Specify how to run the application
+ENTRYPOINT ["java", "-Dconfig.file=/app/config/application.conf", "-jar", "/app/service.jar"]
+
 EOL
 
 # Create dev environment configuration
@@ -73,8 +77,7 @@ JWT_AUDIENCE=mad-mobile-app
 
 # Microservice Endpoints
 GATEWAY_URL=http://gateway:8080
-MESSAGE_BROKER_URL=http://message-broker:5672
-LOG_SERVICE_URL=http://log-service:8080
+MESSAGE_BROKER_URL=http://redis:6379
 
 # Monitoring
 METRICS_ENABLED=true
@@ -106,8 +109,7 @@ JWT_AUDIENCE=mad-mobile-app
 
 # Microservice Endpoints
 GATEWAY_URL=http://gateway:8080
-MESSAGE_BROKER_URL=http://message-broker:5672
-LOG_SERVICE_URL=http://log-service:8080
+MESSAGE_BROKER_URL=http://redis:6379
 
 # Monitoring
 METRICS_ENABLED=true
