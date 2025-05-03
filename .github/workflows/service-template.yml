@@ -80,33 +80,3 @@ jobs:
       registry-token: ${{ secrets.registry-token }}
       ssh-key: ${{ secrets.ssh-key }}
       deploy-host: ${{ secrets.dev-host }}
-
-  approve-prod-deployment:
-    name: Approve Production Deployment
-    needs: deploy-dev
-    if: ${{ !inputs.auto-deploy-prod }}
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.deploy-url.outputs.url }}
-    steps:
-      - name: Generate deployment URL
-        id: deploy-url
-        run: echo "url=https://prod.${{ inputs.service-name }}.zhmu-100.com" >> $GITHUB_OUTPUT
-      - name: Waiting for approval
-        run: echo "Waiting for manual approval to deploy to production"
-
-  deploy-prod:
-    name: Deploy to Production
-    needs: [version, deploy-dev, approve-prod-deployment]
-    if: ${{ always() && (inputs.auto-deploy-prod || needs.approve-prod-deployment.result == 'success') && needs.deploy-dev.result == 'success' }}
-    uses: ./.github/workflows/deploy.yml
-    with:
-      service-name: ${{ inputs.service-name }}
-      environment: "prod"
-      registry: ${{ inputs.registry }}
-      version: ${{ needs.version.outputs.new-version }}
-    secrets:
-      registry-token: ${{ secrets.registry-token }}
-      ssh-key: ${{ secrets.ssh-key }}
-      deploy-host: ${{ secrets.prod-host }}
