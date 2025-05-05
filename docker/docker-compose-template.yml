@@ -29,10 +29,17 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    # Service-specific dependencies will be added by the deployment script
-    # depends_on:
-    #   - service1
-    #   - service2
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${REDIS_HOST:-redis}
+    command: redis-server --requirepass ${REDIS_PASSWORD:-dev_redis_password}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
 
 networks:
   app-network:
@@ -43,3 +50,5 @@ volumes:
     name: ${SERVICE_NAME:-gateway}-data-${DEPLOYMENT_ENV:-development}
   app-logs:
     name: ${SERVICE_NAME:-gateway}-logs-${DEPLOYMENT_ENV:-development}
+  redis-data:
+    name: redis-data-${DEPLOYMENT_ENV:-development}
