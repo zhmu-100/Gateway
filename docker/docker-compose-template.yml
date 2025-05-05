@@ -33,7 +33,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: ${REDIS_HOST:-redis}
-    command: redis-server --requirepass dev_redis_password
+    command: redis-server
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
