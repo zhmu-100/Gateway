@@ -98,6 +98,17 @@ jobs:
           cp config/application/${{ inputs.service-name }}/application.conf deploy/${{ inputs.service-name }}.conf
           cp config/${{ inputs.environment }}/${{ inputs.service-name }}.env deploy/
 
+      - name: Prepare .env file
+        run: |
+          # Adding SERVICE_NAME to .env file
+          echo "SERVICE_NAME=${{ inputs.service-name }}" >> deploy/${{ inputs.service-name }}.env
+          # Adding REGISTRY to .env file
+          echo "REGISTRY=${{ inputs.registry }}/${{ github.repository_owner }}" >> deploy/${{ inputs.service-name }}.env
+          # Adding SERVICE_VERSION to .env file
+          echo "SERVICE_VERSION=${{ inputs.version }}" >> deploy/${{ inputs.service-name }}.env
+          # Adding DEPLOYMENT_ENV to .env file
+          echo "DEPLOYMENT_ENV=${{ inputs.environment }}" >> deploy/${{ inputs.service-name }}.env
+
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
