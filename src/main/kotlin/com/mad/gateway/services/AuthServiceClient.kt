@@ -504,7 +504,7 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
                                                         "User ID not found in response"
                                                 )
 
-                                // Get user details
+                                // Get user details - using raw text to avoid serialization issues
                                 val userResponse =
                                         client.get("$baseUrl/admin/realms/mad/users/$userId") {
                                                 headers {
@@ -516,24 +516,30 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
                                         }
 
                                 if (userResponse.status.isSuccess()) {
-                                        val userInfo: Map<String, Any> = userResponse.body()
+                                        // Get the raw JSON response as text
+                                        val rawJson = userResponse.bodyAsText()
+
+                                        // Use Gson to parse the JSON response safely
+                                        val gson = com.google.gson.Gson()
+                                        val jsonObject =
+                                                gson.fromJson(
+                                                        rawJson,
+                                                        com.google.gson.JsonObject::class.java
+                                                )
+
                                         return RegistrationResponse(
-                                                id = userInfo["id"]?.toString() ?: "",
+                                                id = jsonObject.get("id")?.asString ?: "",
                                                 createdTimestamp =
-                                                        userInfo["createdTimestamp"]
-                                                                ?.toString()
-                                                                ?.toLongOrNull()
+                                                        jsonObject.get("createdTimestamp")?.asLong
                                                                 ?: 0L,
-                                                username = userInfo["username"]?.toString() ?: "",
-                                                enabled =
-                                                        userInfo["enabled"]?.toString()?.toBoolean()
+                                                username = jsonObject.get("username")?.asString
+                                                                ?: "",
+                                                enabled = jsonObject.get("enabled")?.asBoolean
                                                                 ?: false,
                                                 emailVerified =
-                                                        userInfo["emailVerified"]
-                                                                ?.toString()
-                                                                ?.toBoolean()
+                                                        jsonObject.get("emailVerified")?.asBoolean
                                                                 ?: false,
-                                                email = userInfo["email"]?.toString() ?: ""
+                                                email = jsonObject.get("email")?.asString ?: ""
                                         )
                                 } else {
                                         val errorBody = userResponse.bodyAsText()

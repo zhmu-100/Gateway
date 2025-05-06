@@ -60,16 +60,25 @@ abstract class ServiceClient(protected val client: HttpClient, protected val bas
          * @param endpoint The API endpoint to call (will be appended to the base URL)
          * @param headers Optional HTTP headers to include in the request
          * @return The deserialized response body of type T
+         * @throws ServiceException if the server returns an error response
          */
         protected suspend inline fun <reified T> get(
                 endpoint: String,
                 headers: Map<String, String> = emptyMap()
         ): T {
-                return client
-                        .get("$baseUrl$endpoint") {
+                val response =
+                        client.get("$baseUrl$endpoint") {
                                 headers.forEach { (key, value) -> header(key, value) }
                         }
-                        .body()
+
+                // Handle error responses
+                if (!response.status.isSuccess()) {
+                        val errorBody = response.bodyAsText()
+                        logger.error { "Service returned error ${response.status}: $errorBody" }
+                        throw ServiceException(response.status.value, errorBody)
+                }
+
+                return response.body()
         }
 
         /**
@@ -79,19 +88,30 @@ abstract class ServiceClient(protected val client: HttpClient, protected val bas
          * @param body Optional request body to send (will be serialized to JSON)
          * @param headers Optional HTTP headers to include in the request
          * @return The deserialized response body of type T
+         * @throws ServiceException if the server returns an error response
          */
         protected suspend inline fun <reified T> post(
                 endpoint: String,
                 body: Any? = null,
                 headers: Map<String, String> = emptyMap()
         ): T {
-                return client
-                        .post("$baseUrl$endpoint") {
+                val response =
+                        client.post("$baseUrl$endpoint") {
                                 headers.forEach { (key, value) -> header(key, value) }
                                 contentType(ContentType.Application.Json)
                                 setBody(body)
                         }
-                        .body()
+
+                // Handle error responses
+                if (!response.status.isSuccess()) {
+                        val errorBody = response.bodyAsText()
+                        logger.error {
+                                "Service returned error ${response.status} for POST to $endpoint: $errorBody"
+                        }
+                        throw ServiceException(response.status.value, errorBody)
+                }
+
+                return response.body()
         }
 
         /**

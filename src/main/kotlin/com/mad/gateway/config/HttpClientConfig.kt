@@ -7,6 +7,9 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.plugins.observer.*
 import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.gson.*
+import io.ktor.serialization.kotlinx.KotlinxSerializationConverter
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
@@ -23,8 +26,9 @@ fun createHttpClient(): HttpClient {
             connectTimeoutMillis = 5000 // 5 seconds
         }
 
-        // Configure JSON serialization
+        // Configure JSON serialization with both Kotlin and Gson serializers
         install(ContentNegotiation) {
+            // Kotlinx JSON serializer
             json(
                     Json {
                         prettyPrint = false
@@ -34,6 +38,25 @@ fun createHttpClient(): HttpClient {
                         useAlternativeNames = false // Don't use alternative names for properties
                         encodeDefaults = true // Include default property values
                     }
+            )
+
+            // Add Gson serializer as a fallback
+            gson {
+                setPrettyPrinting()
+                serializeNulls()
+                // Register custom type adapters if needed
+            }
+
+            // Register content types explicitly
+            register(
+                    ContentType.Application.Json,
+                    KotlinxSerializationConverter(
+                            Json {
+                                ignoreUnknownKeys = true
+                                isLenient = true
+                                coerceInputValues = true
+                            }
+                    )
             )
         }
 

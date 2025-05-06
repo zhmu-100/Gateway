@@ -91,64 +91,84 @@ fun Route.dbRoutes() {
 
                                         // Check if this is the new format (with 'table' field) or
                                         // legacy format (with 'query' field)
-                                        if (requestMap.containsKey("table")) {
-                                                val table = requestMap["table"] as? String
-                                                if (table.isNullOrBlank()) {
+                                        try {
+                                                if (requestMap.containsKey("table")) {
+                                                        val table = requestMap["table"] as? String
+                                                        if (table.isNullOrBlank()) {
+                                                                call.respond(
+                                                                        HttpStatusCode.BadRequest,
+                                                                        mapOf(
+                                                                                "error" to
+                                                                                        "Table name is required"
+                                                                        )
+                                                                )
+                                                                return@post
+                                                        }
+
+                                                        @Suppress("UNCHECKED_CAST")
+                                                        val columns =
+                                                                requestMap["columns"] as?
+                                                                        List<String>
+
+                                                        @Suppress("UNCHECKED_CAST")
+                                                        val filters =
+                                                                requestMap["filters"] as?
+                                                                        Map<String, String>
+
+                                                        logger.info {
+                                                                "Processing read request for table: $table, columns: $columns, filters: $filters"
+                                                        }
+                                                        val response =
+                                                                dbService.read(
+                                                                        table,
+                                                                        columns,
+                                                                        filters
+                                                                )
+                                                        call.respond(response)
+                                                } else if (requestMap.containsKey("query")) {
+                                                        // Legacy format support
+                                                        val query = requestMap["query"] as? String
+                                                        if (query.isNullOrBlank()) {
+                                                                call.respond(
+                                                                        HttpStatusCode.BadRequest,
+                                                                        mapOf(
+                                                                                "error" to
+                                                                                        "Query is required"
+                                                                        )
+                                                                )
+                                                                return@post
+                                                        }
+
+                                                        @Suppress("UNCHECKED_CAST")
+                                                        val params =
+                                                                (requestMap["params"] as? List<*>)
+                                                                        ?.filterIsInstance<String>()
+                                                                        ?: emptyList()
+
+                                                        logger.info {
+                                                                "Processing legacy read request with query: $query, params: $params"
+                                                        }
+                                                        val response = dbService.read(query, params)
+                                                        call.respond(response)
+                                                } else {
                                                         call.respond(
                                                                 HttpStatusCode.BadRequest,
                                                                 mapOf(
                                                                         "error" to
-                                                                                "Table name is required"
+                                                                                "Invalid request format. Either 'table' or 'query' is required"
                                                                 )
                                                         )
                                                         return@post
                                                 }
-
-                                                @Suppress("UNCHECKED_CAST")
-                                                val columns = requestMap["columns"] as? List<String>
-
-                                                @Suppress("UNCHECKED_CAST")
-                                                val filters =
-                                                        requestMap["filters"] as?
-                                                                Map<String, String>
-
-                                                logger.info {
-                                                        "Processing read request for table: $table, columns: $columns, filters: $filters"
+                                        } catch (e: ServiceException) {
+                                                logger.error(e) {
+                                                        "Service error: ${e.statusCode} - ${e.errorBody}"
                                                 }
-                                                val response =
-                                                        dbService.read(table, columns, filters)
-                                                call.respond(response)
-                                        } else if (requestMap.containsKey("query")) {
-                                                // Legacy format support
-                                                val query = requestMap["query"] as? String
-                                                if (query.isNullOrBlank()) {
-                                                        call.respond(
-                                                                HttpStatusCode.BadRequest,
-                                                                mapOf(
-                                                                        "error" to
-                                                                                "Query is required"
-                                                                )
-                                                        )
-                                                        return@post
-                                                }
-
-                                                @Suppress("UNCHECKED_CAST")
-                                                val params =
-                                                        (requestMap["params"] as? List<*>)
-                                                                ?.filterIsInstance<String>()
-                                                                ?: emptyList()
-
-                                                logger.info {
-                                                        "Processing legacy read request with query: $query, params: $params"
-                                                }
-                                                val response = dbService.read(query, params)
-                                                call.respond(response)
-                                        } else {
                                                 call.respond(
-                                                        HttpStatusCode.BadRequest,
+                                                        HttpStatusCode.fromValue(e.statusCode),
                                                         mapOf(
                                                                 "error" to
-                                                                        "Invalid request format. Either 'table' or 'query' is required"
+                                                                        "Database service error: ${e.errorBody}"
                                                         )
                                                 )
                                                 return@post
