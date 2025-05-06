@@ -21,15 +21,15 @@ class ProfileServiceClient(client: HttpClient, baseUrl: String) :
     }
 
     /** Get a user profile by ID */
-    suspend fun getProfile(id: String): UserProfile {
+    suspend fun getProfile(id: String): UserProfile? {
         logger.info { "Getting profile for user ID: $id" }
-        return get("/$id")
+        return getOrNull("/$id")
     }
 
     /** List profiles with pagination */
-    suspend fun listProfiles(page: Int = 1, pageSize: Int = 20): ListProfilesResponse {
+    suspend fun listProfiles(page: Int = 1, pageSize: Int = 20): ListProfilesResponse? {
         logger.info { "Listing profiles: page=$page, pageSize=$pageSize" }
-        return get("/?page=$page&pageSize=$pageSize")
+        return getOrNull("/?page=$page&pageSize=$pageSize")
     }
 
     /** Update a user profile */
@@ -64,9 +64,9 @@ class ProfileServiceClient(client: HttpClient, baseUrl: String) :
             userId: String,
             page: Int = 1,
             pageSize: Int = 20
-    ): ListFollowersResponse {
+    ): ListFollowersResponse? {
         logger.info { "Listing followers for user ID: $userId" }
-        return get("/$userId/followers?page=$page&pageSize=$pageSize")
+        return getOrNull("/$userId/followers?page=$page&pageSize=$pageSize")
     }
 
     /** List users that a user is following */
@@ -74,9 +74,9 @@ class ProfileServiceClient(client: HttpClient, baseUrl: String) :
             userId: String,
             page: Int = 1,
             pageSize: Int = 20
-    ): ListFollowingResponse {
+    ): ListFollowingResponse? {
         logger.info { "Listing following for user ID: $userId" }
-        return get("/$userId/following?page=$page&pageSize=$pageSize")
+        return getOrNull("/$userId/following?page=$page&pageSize=$pageSize")
     }
 }
 

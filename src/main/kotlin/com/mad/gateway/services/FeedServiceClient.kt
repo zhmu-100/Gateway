@@ -38,9 +38,9 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @param id The unique identifier of the post
      * @return The post object if found
      */
-    suspend fun getPost(id: String): Post {
+    suspend fun getPost(id: String): Post? {
         logger.info { "Getting post with ID: $id" }
-        return get("/posts/$id")
+        return getOrNull("/posts/$id")
     }
 
     /**
@@ -57,9 +57,9 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
             viewerId: String,
             page: Int = 1,
             pageSize: Int = 20
-    ): ListPostsResponse {
+    ): ListPostsResponse? {
         logger.info { "Listing posts for user ID: $userId, viewed by: $viewerId" }
-        return get("/users/$userId/posts?viewerId=$viewerId&page=$page&pageSize=$pageSize")
+        return getOrNull("/users/$userId/posts?viewerId=$viewerId&page=$page&pageSize=$pageSize")
     }
 
     /**
@@ -70,9 +70,9 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @param pageSize The number of posts per page
      * @return A paginated response containing posts and pagination metadata
      */
-    suspend fun listPosts(viewerId: String, page: Int = 1, pageSize: Int = 20): ListPostsResponse {
+    suspend fun listPosts(viewerId: String, page: Int = 1, pageSize: Int = 20): ListPostsResponse? {
         logger.info { "Listing feed posts for viewer ID: $viewerId" }
-        return get("/posts?viewerId=$viewerId&page=$page&pageSize=$pageSize")
+        return getOrNull("/posts?viewerId=$viewerId&page=$page&pageSize=$pageSize")
     }
 
     /**
@@ -100,9 +100,9 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
             postId: String,
             page: Int = 1,
             pageSize: Int = 20
-    ): ListCommentsResponse {
+    ): ListCommentsResponse? {
         logger.info { "Listing comments for post ID: $postId" }
-        return get("/posts/$postId/comments?page=$page&pageSize=$pageSize")
+        return getOrNull("/posts/$postId/comments?page=$page&pageSize=$pageSize")
     }
 
     /**

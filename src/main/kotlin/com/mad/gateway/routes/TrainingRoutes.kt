@@ -29,6 +29,10 @@ fun Route.trainingRoutes() {
                                 )
 
                 val workout = trainingService.getWorkout(id)
+                if (workout == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Workout not found"))
+                    return@get
+                }
                 call.respond(workout)
             } catch (e: Exception) {
                 loggingService.logError(
@@ -44,6 +48,10 @@ fun Route.trainingRoutes() {
         get("/workouts") {
             try {
                 val workouts = trainingService.listWorkouts()
+                if (workouts == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Workouts not found"))
+                    return@get
+                }
                 call.respond(workouts)
             } catch (e: Exception) {
                 loggingService.logError(
@@ -69,6 +77,10 @@ fun Route.trainingRoutes() {
                                 )
 
                 val exercises = trainingService.getWorkoutExercises(id)
+                if (exercises == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Workout exercises not found"))
+                    return@get
+                }
                 call.respond(exercises)
             } catch (e: Exception) {
                 loggingService.logError(

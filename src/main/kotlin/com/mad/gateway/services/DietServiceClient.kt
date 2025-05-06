@@ -23,9 +23,9 @@ class DietServiceClient(client: HttpClient, baseUrl: String) :
     }
 
     /** Get a meal by ID */
-    suspend fun getMeal(id: String): Meal {
+    suspend fun getMeal(id: String): Meal? {
         logger.info { "Getting meal with ID: $id" }
-        return get("/meals/$id")
+        return getOrNull("/meals/$id")
     }
 
     /** List meals within a date range */
@@ -44,16 +44,16 @@ class DietServiceClient(client: HttpClient, baseUrl: String) :
     }
 
     /** Get a food by ID */
-    suspend fun getFood(id: String): Food {
+    suspend fun getFood(id: String): Food? {
         logger.info { "Getting food with ID: $id" }
-        return get("/foods/$id")
+        return getOrNull("/foods/$id")
     }
 
     /** List foods with optional name filter */
-    suspend fun listFoods(nameFilter: String? = null): ListFoodsResponse {
+    suspend fun listFoods(nameFilter: String? = null): ListFoodsResponse? {
         logger.info { "Listing foods with filter: $nameFilter" }
         val queryParam = nameFilter?.let { "?nameFilter=$it" } ?: ""
-        return get("/foods$queryParam")
+        return getOrNull("/foods$queryParam")
     }
 }
 

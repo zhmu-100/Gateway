@@ -34,6 +34,10 @@ fun Route.dietRoutes() {
                     }
 
                     val food = dietService.getFood(id)
+                    if (food == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "Food not found"))
+                        return@get
+                    }
                     call.respond(food)
                 } catch (e: Exception) {
                     loggingService.logError(
@@ -50,6 +54,10 @@ fun Route.dietRoutes() {
                 try {
                     val nameFilter = call.request.queryParameters["nameFilter"]
                     val foods = dietService.listFoods(nameFilter)
+                    if (foods == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "Foods not found"))
+                        return@get
+                    }
                     call.respond(foods)
                 } catch (e: Exception) {
                     loggingService.logError(
@@ -116,6 +124,10 @@ fun Route.dietRoutes() {
                     }
 
                     val meal = dietService.getMeal(id)
+                    if (meal == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "Meal not found"))
+                        return@get
+                    }
                     call.respond(meal)
                 } catch (e: Exception) {
                     loggingService.logError(

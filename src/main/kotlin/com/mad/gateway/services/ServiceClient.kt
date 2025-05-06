@@ -7,8 +7,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
-
 /**
  * Base service client implementation.
  *
@@ -17,9 +15,39 @@ private val logger = KotlinLogging.logger {}
  *
  * @property client The Ktor HTTP client used for making requests
  * @property baseUrl The base URL for the service (to be set by each implementing service client)
- * @constructor Creates a new instance of the service client with the specified HTTP client and base URL
+ * @constructor Creates a new instance of the service client with the specified HTTP client and base
+ * URL
  */
 abstract class ServiceClient(protected val client: HttpClient, protected val baseUrl: String) {
+        protected val logger = KotlinLogging.logger {}
+
+        /** Perform a GET request and handle 404 responses gracefully */
+        protected suspend inline fun <reified T> getOrNull(path: String): T? {
+                try {
+                        val response = client.get("$baseUrl$path")
+
+                        if (response.status == HttpStatusCode.NotFound) {
+                                logger.debug { "Resource not found at $baseUrl$path" }
+                                return null
+                        }
+
+                        return response.body()
+                } catch (e: Exception) {
+                        when (e) {
+                                is io.ktor.client.call.NoTransformationFoundException -> {
+                                        if (e.message?.contains("404 Not Found") == true) {
+                                                logger.debug {
+                                                        "Resource not found at $baseUrl$path with 404 status"
+                                                }
+                                                return null
+                                        }
+                                        throw e
+                                }
+                                else -> throw e
+                        }
+                }
+        }
+
         /**
          * Performs an HTTP GET request to the specified endpoint.
          *

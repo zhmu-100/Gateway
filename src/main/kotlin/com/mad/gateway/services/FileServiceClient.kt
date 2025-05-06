@@ -130,14 +130,32 @@ class FileServiceClient(client: HttpClient, baseUrl: String) :
         return client.post("$baseUrl/files/fix-upload/$fileId") { setBody(formData) }.body()
     }
 
-    suspend fun getFile(fileId: String): ByteArray {
-        return client
-                .get("$baseUrl/files/$fileId") { accept(ContentType.Application.OctetStream) }
-                .body()
+    suspend fun getFile(fileId: String): ByteArray? {
+        try {
+            return client
+                    .get("$baseUrl/files/$fileId") { accept(ContentType.Application.OctetStream) }
+                    .body()
+        } catch (e: Exception) {
+            if (e is io.ktor.client.call.NoTransformationFoundException && 
+                e.message?.contains("404 Not Found") == true) {
+                logger.debug { "File not found: $fileId" }
+                return null
+            }
+            throw e
+        }
     }
 
-    suspend fun getProfileImage(userId: String): ByteArray {
-        return client.get("$baseUrl/files/profile/$userId") { accept(ContentType.Image.Any) }.body()
+    suspend fun getProfileImage(userId: String): ByteArray? {
+        try {
+            return client.get("$baseUrl/files/profile/$userId") { accept(ContentType.Image.Any) }.body()
+        } catch (e: Exception) {
+            if (e is io.ktor.client.call.NoTransformationFoundException && 
+                e.message?.contains("404 Not Found") == true) {
+                logger.debug { "Profile image not found for user: $userId" }
+                return null
+            }
+            throw e
+        }
     }
 
     suspend fun deleteFile(fileId: String): Boolean {
@@ -146,22 +164,30 @@ class FileServiceClient(client: HttpClient, baseUrl: String) :
     }
 
     /** Get a file as a flow of bytes */
-    fun getFileAsFlow(id: String): Flow<ByteArray> = flow {
+    fun getFileAsFlow(id: String): Flow<ByteArray>? = flow {
         logger.info { "Getting file with ID: $id as flow" }
+        try {
+            val channel = client.get("$baseUrl/$id").body<ByteReadChannel>()
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            var bytesRead: Int
 
-        val channel = client.get("$baseUrl/$id").body<ByteReadChannel>()
-        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-        var bytesRead: Int
-
-        while (channel.readAvailable(buffer, 0, buffer.size).also { bytesRead = it } > 0) {
-            emit(buffer.copyOf(bytesRead))
+            while (channel.readAvailable(buffer, 0, buffer.size).also { bytesRead = it } > 0) {
+                emit(buffer.copyOf(bytesRead))
+            }
+        } catch (e: Exception) {
+            if (e is io.ktor.client.call.NoTransformationFoundException && 
+                e.message?.contains("404 Not Found") == true) {
+                logger.debug { "File not found for streaming: $id" }
+                return@flow
+            }
+            throw e
         }
     }
 
     /** Get a file URL */
-    suspend fun getFileUrl(id: String): GetFileUrlResponse {
+    suspend fun getFileUrl(id: String): GetFileUrlResponse? {
         logger.info { "Getting URL for file with ID: $id" }
-        return get("/url/$id")
+        return getOrNull("/url/$id")
     }
 
     companion object {

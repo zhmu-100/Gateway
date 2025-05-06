@@ -14,21 +14,21 @@ class StatisticsServiceClient(client: HttpClient, baseUrl: String) :
     private val application: Application by inject()
 
     /** Get GPS data for an exercise */
-    suspend fun getGPSData(exerciseId: String): GetGPSDataResponse {
+    suspend fun getGPSData(exerciseId: String): GetGPSDataResponse? {
         logger.info { "Getting GPS data for exercise ID: $exerciseId" }
-        return get("/gps?exerciseId=$exerciseId")
+        return getOrNull("/gps?exerciseId=$exerciseId")
     }
 
     /** Get heart rate data for an exercise */
-    suspend fun getHeartRateData(exerciseId: String): GetHeartRateDataResponse {
+    suspend fun getHeartRateData(exerciseId: String): GetHeartRateDataResponse? {
         logger.info { "Getting heart rate data for exercise ID: $exerciseId" }
-        return get("/heartrate?exerciseId=$exerciseId")
+        return getOrNull("/heartrate?exerciseId=$exerciseId")
     }
 
     /** Get calories data for a user */
-    suspend fun getCaloriesData(userId: String): GetCaloriesDataResponse {
+    suspend fun getCaloriesData(userId: String): GetCaloriesDataResponse? {
         logger.info { "Getting calories data for user ID: $userId" }
-        return get("/calories?userId=$userId")
+        return getOrNull("/calories?userId=$userId")
     }
 
     /** Upload GPS data */

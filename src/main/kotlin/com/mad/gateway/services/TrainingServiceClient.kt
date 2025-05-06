@@ -20,15 +20,15 @@ class TrainingServiceClient(client: HttpClient, baseUrl: String) :
     }
 
     /** Get a workout by ID */
-    suspend fun getWorkout(id: String): Workout {
+    suspend fun getWorkout(id: String): Workout? {
         logger.info { "Getting workout with ID: $id" }
-        return get("/workouts/$id")
+        return getOrNull("/workouts/$id")
     }
 
     /** List all workouts */
-    suspend fun listWorkouts(): ListWorkoutsResponse {
+    suspend fun listWorkouts(): ListWorkoutsResponse? {
         logger.info { "Listing all workouts" }
-        return get("/workouts")
+        return getOrNull("/workouts")
     }
 
     /** Update a workout */
@@ -44,9 +44,9 @@ class TrainingServiceClient(client: HttpClient, baseUrl: String) :
     }
 
     /** Get exercises for a workout */
-    suspend fun getWorkoutExercises(workoutId: String): GetWorkoutExercisesResponse {
+    suspend fun getWorkoutExercises(workoutId: String): GetWorkoutExercisesResponse? {
         logger.info { "Getting exercises for workout with ID: $workoutId" }
-        return get("/workouts/$workoutId/exercises")
+        return getOrNull("/workouts/$workoutId/exercises")
     }
 
     /** Create a custom workout */
