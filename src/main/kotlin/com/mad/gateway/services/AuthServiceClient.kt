@@ -2,6 +2,7 @@ package com.mad.gateway.services
 
 import io.ktor.client.*
 import io.ktor.server.application.*
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -80,6 +81,7 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes for requests and responses
 
+@Serializable
 data class LoginRequest(
         val grantType: String,
         val clientId: String,
@@ -87,18 +89,23 @@ data class LoginRequest(
         val password: String
 )
 
+@Serializable
 data class RefreshTokenRequest(
         val grantType: String,
         val clientId: String,
         val refreshToken: String
 )
 
+@Serializable
 data class ValidateTokenRequest(val token: String, val clientId: String)
 
+@Serializable
 data class LogoutRequest(val refreshToken: String, val clientId: String)
 
+@Serializable
 data class Credential(val type: String, val value: String, val temporary: Boolean)
 
+@Serializable
 data class RegistrationRequest(
         val username: String,
         val email: String,
@@ -106,6 +113,7 @@ data class RegistrationRequest(
         val credentials: List<Credential>
 )
 
+@Serializable
 data class TokenResponse(
         val accessToken: String,
         val expiresIn: Int,
@@ -117,6 +125,7 @@ data class TokenResponse(
         val scope: String
 )
 
+@Serializable
 data class TokenInfo(
         val active: Boolean,
         val exp: Long,
@@ -135,6 +144,7 @@ data class TokenInfo(
         val preferredUsername: String?
 )
 
+@Serializable
 data class RegistrationResponse(
         val id: String,
         val createdTimestamp: Long,

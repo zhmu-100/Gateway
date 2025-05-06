@@ -9,6 +9,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
 /**
@@ -180,6 +181,7 @@ fun Route.authRoutes() {
  * @property username The user's username
  * @property password The user's password
  */
+@Serializable
 data class LoginRequest(val username: String, val password: String)
 
 /**
@@ -189,6 +191,7 @@ data class LoginRequest(val username: String, val password: String)
  * @property email The user's email address
  * @property password The desired password
  */
+@Serializable
 data class RegisterRequest(val username: String, val email: String, val password: String)
 
 /**
@@ -196,6 +199,7 @@ data class RegisterRequest(val username: String, val email: String, val password
  *
  * @property refreshToken The refresh token to use for obtaining a new access token
  */
+@Serializable
 data class RefreshTokenRequest(val refreshToken: String)
 
 /**
@@ -203,4 +207,5 @@ data class RefreshTokenRequest(val refreshToken: String)
  *
  * @property refreshToken The refresh token to invalidate
  */
+@Serializable
 data class LogoutRequest(val refreshToken: String)
