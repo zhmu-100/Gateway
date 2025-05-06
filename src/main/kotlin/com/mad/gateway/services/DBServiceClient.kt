@@ -54,12 +54,13 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the gRPC definitions
 
-@Serializable data class CreateRequest(val table: String, val data: Map<String, String>)
+@Serializable
+data class CreateRequest(val table: String?, val data: Map<String, String> = emptyMap())
 
 @Serializable
 data class CreateResponse(val success: Boolean, val message: String, val insertedId: Long)
 
-@Serializable data class ReadRequest(val query: String, val params: List<String>)
+@Serializable data class ReadRequest(val query: String?, val params: List<String>? = null)
 
 @Serializable data class Row(val columns: Map<String, String>)
 
@@ -67,10 +68,10 @@ data class CreateResponse(val success: Boolean, val message: String, val inserte
 
 @Serializable
 data class UpdateRequest(
-        val table: String,
-        val data: Map<String, String>,
-        val condition: String,
-        val conditionParams: List<String>
+        val table: String?,
+        val data: Map<String, String> = emptyMap(),
+        val condition: String?,
+        val conditionParams: List<String>? = null
 )
 
 @Serializable
@@ -78,9 +79,9 @@ data class UpdateResponse(val success: Boolean, val message: String, val rowsAff
 
 @Serializable
 data class DeleteRequest(
-        val table: String,
-        val condition: String,
-        val conditionParams: List<String>
+        val table: String?,
+        val condition: String?,
+        val conditionParams: List<String>? = null
 )
 
 @Serializable
