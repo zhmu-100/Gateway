@@ -32,6 +32,9 @@ fun Application.configureKoin() {
                 // Provide the Application
                 single { app }
 
+                // Register LoggingServiceClient
+                single { LoggingServiceClient() }
+
                 // Basic services
                 // Service clients with baseUrl from environment variables
                 single {
