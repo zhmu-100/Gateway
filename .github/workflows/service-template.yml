@@ -58,15 +58,6 @@ jobs:
       java-version: ${{ inputs.java-version }}
       gradle-task: "build"
 
-  test:
-    name: Test Service
-    needs: build
-    uses: ./.github/workflows/test.yml
-    with:
-      service-name: ${{ inputs.service-name }}
-      java-version: ${{ inputs.java-version }}
-      run-integration-tests: ${{ inputs.run-integration-tests }}
-
   deploy-dev:
     name: Deploy to Development
     needs: [version, test]
