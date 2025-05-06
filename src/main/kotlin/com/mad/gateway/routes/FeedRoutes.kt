@@ -31,12 +31,41 @@ fun Route.feedRoutes() {
                     val post = feedService.getPost(id)
                     call.respond(post)
                 } catch (e: Exception) {
-                    loggingService.logError(
-                            "Failed to get post",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error").toString())
+                    // Local logging first to ensure we always have a record
+                    application.log.error("Failed to get post with ID: ${call.parameters["id"]}", e)
+
+                    try {
+                        loggingService.logError(
+                                "Failed to get post",
+                                e,
+                                mapOf(
+                                        "error" to (e.message ?: "Unknown error").toString(),
+                                        "path" to call.request.path(),
+                                        "postId" to (call.parameters["id"] ?: "unknown")
+                                )
+                        )
+                    } catch (loggingError: Exception) {
+                        application.log.error("Additionally, logging service failed", loggingError)
+                    }
+
+                    // Determine appropriate status code
+                    val statusCode =
+                            when (e) {
+                                is ServiceException -> HttpStatusCode.fromValue(e.statusCode)
+                                is io.ktor.client.plugins.ClientRequestException -> {
+                                    if (e.response.status == HttpStatusCode.NotFound)
+                                            HttpStatusCode.NotFound
+                                    else HttpStatusCode.BadRequest
+                                }
+                                is io.ktor.client.plugins.ServerResponseException ->
+                                        HttpStatusCode.BadGateway
+                                else -> HttpStatusCode.InternalServerError
+                            }
+
+                    call.respond(
+                            statusCode,
+                            mapOf("error" to "Failed to get post: ${e.message ?: "Unknown error"}")
                     )
-                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Post not found"))
                 }
             }
 
@@ -61,14 +90,45 @@ fun Route.feedRoutes() {
                             )
                         }
                     } catch (e: Exception) {
-                        loggingService.logError(
-                                "Failed to list feed posts",
-                                e,
-                                mapOf("error" to (e.message ?: "Unknown error"))
-                        )
+                        // Local logging first to ensure we always have a record
+                        application.log.error("Failed to list feed posts", e)
+
+                        try {
+                            loggingService.logError(
+                                    "Failed to list feed posts",
+                                    e,
+                                    mapOf(
+                                            "error" to (e.message ?: "Unknown error").toString(),
+                                            "path" to call.request.path()
+                                    )
+                            )
+                        } catch (loggingError: Exception) {
+                            application.log.error(
+                                    "Additionally, logging service failed",
+                                    loggingError
+                            )
+                        }
+
+                        // Determine appropriate status code
+                        val statusCode =
+                                when (e) {
+                                    is ServiceException -> HttpStatusCode.fromValue(e.statusCode)
+                                    is io.ktor.client.plugins.ClientRequestException -> {
+                                        if (e.response.status == HttpStatusCode.NotFound)
+                                                HttpStatusCode.NotFound
+                                        else HttpStatusCode.BadRequest
+                                    }
+                                    is io.ktor.client.plugins.ServerResponseException ->
+                                            HttpStatusCode.BadGateway
+                                    else -> HttpStatusCode.InternalServerError
+                                }
+
                         call.respond(
-                                HttpStatusCode.InternalServerError,
-                                mapOf("error" to "Failed to list feed posts")
+                                statusCode,
+                                mapOf(
+                                        "error" to
+                                                "Failed to list feed posts: ${e.message ?: "Unknown error"}"
+                                )
                         )
                     }
                 }

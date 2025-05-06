@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the Notes service */
 class NotesServiceClient(client: HttpClient, baseUrl: String) :
@@ -17,33 +17,33 @@ class NotesServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Create a new note */
     suspend fun createNote(note: Note): Note {
-        logger.info { "Creating note for user: ${note.userId}" }
+        loggingServiceLogger.info { "Creating note for user: ${note.userId}" }
         val request = CreateNoteRequest(note)
         return post("/notes", request)
     }
 
     /** Get a note by ID */
     suspend fun getNote(id: String): Note {
-        logger.info { "Getting note with ID: $id" }
+        loggingServiceLogger.info { "Getting note with ID: $id" }
         return get("/notes/$id")
     }
 
     /** List notes for a user */
     suspend fun listNotes(userId: String, page: Int = 1, pageSize: Int = 20): ListNotesResponse {
-        logger.info { "Listing notes for user ID: $userId" }
+        loggingServiceLogger.info { "Listing notes for user ID: $userId" }
         return get("/notes?userId=$userId&page=$page&pageSize=$pageSize")
     }
 
     /** Update a note */
     suspend fun updateNote(note: Note): Note {
-        logger.info { "Updating note with ID: ${note.id}" }
+        loggingServiceLogger.info { "Updating note with ID: ${note.id}" }
         val request = UpdateNoteRequest(note)
         return put("/notes/${note.id}", request)
     }
 
     /** Delete a note */
     suspend fun deleteNote(id: String, userId: String) {
-        logger.info { "Deleting note with ID: $id for user: $userId" }
+        loggingServiceLogger.info { "Deleting note with ID: $id for user: $userId" }
         delete<Unit>("/notes/$id?userId=$userId")
     }
 
@@ -51,14 +51,14 @@ class NotesServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Create a new notification */
     suspend fun createNotification(notification: Notification): Notification {
-        logger.info { "Creating notification for user: ${notification.userId}" }
+        loggingServiceLogger.info { "Creating notification for user: ${notification.userId}" }
         val request = CreateNotificationRequest(notification)
         return post("/notifications", request)
     }
 
     /** Get a notification by ID */
     suspend fun getNotification(id: String): Notification {
-        logger.info { "Getting notification with ID: $id" }
+        loggingServiceLogger.info { "Getting notification with ID: $id" }
         return get("/notifications/$id")
     }
 
@@ -68,7 +68,7 @@ class NotesServiceClient(client: HttpClient, baseUrl: String) :
             page: Int = 1,
             pageSize: Int = 20
     ): ListNotificationsResponse {
-        logger.info { "Listing notifications for user ID: $userId" }
+        loggingServiceLogger.info { "Listing notifications for user ID: $userId" }
         return get("/notifications?userId=$userId&page=$page&pageSize=$pageSize")
     }
 
@@ -79,7 +79,7 @@ class NotesServiceClient(client: HttpClient, baseUrl: String) :
             action: NotificationAction,
             snoozeDuration: NotificationSnooze? = null
     ): Notification {
-        logger.info { "Performing action $action on notification with ID: $id" }
+        loggingServiceLogger.info { "Performing action $action on notification with ID: $id" }
         val request = NotificationActionRequest(id, userId, action, snoozeDuration)
         return post("/notifications/$id/actions", request)
     }

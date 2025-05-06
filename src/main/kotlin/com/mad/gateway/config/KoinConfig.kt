@@ -25,78 +25,78 @@ fun Application.configureKoin() {
     install(Koin) {
         slf4jLogger()
         modules(
-            module {
-                // Provide the HttpClient
-                single { httpClient }
+                module {
+                    // Provide the HttpClient
+                    single { httpClient }
 
-                // Provide the Application
-                single { app }
+                    // Provide the Application
+                    single { app }
 
-                // Basic services
-                // Service clients with baseUrl from environment variables
-                single {
-                    val baseUrl = System.getenv("AUTH_SERVICE_URL")
-                    logger.debug("Starting AuthServiceClient on $baseUrl")
-                    AuthServiceClient(get(), baseUrl)
+                    // Basic services
+                    // Service clients with baseUrl from environment variables
+                    single {
+                        val baseUrl = System.getenv("AUTH_SERVICE_URL")
+                        logger.debug("Starting AuthServiceClient on $baseUrl")
+                        AuthServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("LOGGING_SERVICE_URL")
+                        logger.debug("Starting LoggingServiceClient on $baseUrl")
+                        LoggingServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("PROFILE_SERVICE_URL")
+                        logger.debug("Starting ProfileServiceClient on $baseUrl")
+                        ProfileServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("TRAINING_SERVICE_URL")
+                        logger.debug("Starting TrainingServiceClient on $baseUrl")
+                        TrainingServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("DIET_SERVICE_URL")
+                        logger.debug("Starting DietServiceClient on $baseUrl")
+                        DietServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("FEED_SERVICE_URL")
+                        logger.debug("Starting FeedServiceClient on $baseUrl")
+                        FeedServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("NOTES_SERVICE_URL")
+                        logger.debug("Starting NotesServiceClient on $baseUrl")
+                        NotesServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("STATISTICS_SERVICE_URL")
+                        logger.debug("Starting StatisticsServiceClient on $baseUrl")
+                        StatisticsServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("DB_SERVICE_URL")
+                        logger.debug("Starting DBServiceClient on $baseUrl")
+                        DBServiceClient(get(), baseUrl)
+                    }
+
+                    single {
+                        val baseUrl = System.getenv("FILE_SERVICE_URL")
+                        logger.debug("Starting FileServiceClient on $baseUrl")
+                        FileServiceClient(get(), baseUrl)
+                    }
+
+                    // Message broker
+                    single { RedisMessageBroker(get()) }
                 }
-
-                single {
-                    val baseUrl = System.getenv("LOGGING_SERVICE_URL")
-                    logger.debug("Starting LoggingServiceClient on $baseUrl")
-                    LoggingServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("PROFILE_SERVICE_URL")
-                    logger.debug("Starting ProfileServiceClient on $baseUrl")
-                    ProfileServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("TRAINING_SERVICE_URL")
-                    logger.debug("Starting TrainingServiceClient on $baseUrl")
-                    TrainingServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("DIET_SERVICE_URL")
-                    logger.debug("Starting DietServiceClient on $baseUrl")
-                    DietServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("FEED_SERVICE_URL")
-                    logger.debug("Starting FeedServiceClient on $baseUrl")
-                    FeedServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("NOTES_SERVICE_URL")
-                    logger.debug("Starting NotesServiceClient on $baseUrl")
-                    NotesServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("STATISTICS_SERVICE_URL")
-                    logger.debug("Starting StatisticsServiceClient on $baseUrl")
-                    StatisticsServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("DB_SERVICE_URL")
-                    logger.debug("Starting DBServiceClient on $baseUrl")
-                    DBServiceClient(get(), baseUrl)
-                }
-
-                single {
-                    val baseUrl = System.getenv("FILE_SERVICE_URL")
-                    logger.debug("Starting FileServiceClient on $baseUrl")
-                    FileServiceClient(get(), baseUrl)
-                }
-
-                // Message broker
-                single { RedisMessageBroker(get()) }
-            }
         )
     }
 

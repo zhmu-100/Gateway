@@ -1,8 +1,6 @@
 package com.mad.gateway.routes
 
-import com.mad.gateway.services.LoggingServiceClient
-import com.mad.gateway.services.ProfileServiceClient
-import com.mad.gateway.services.UserProfile
+import com.mad.gateway.services.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -61,12 +59,41 @@ fun Route.profileRoutes() {
                 val profile = profileService.getProfile(id)
                 call.respond(profile)
             } catch (e: Exception) {
-                loggingService.logError(
-                        "Failed to get profile by ID",
-                        e,
-                        mapOf("error" to (e.message ?: "Unknown error"))
+                // Local logging first to ensure we always have a record
+                application.log.error("Failed to get profile with ID: ${call.parameters["id"]}", e)
+
+                try {
+                    loggingService.logError(
+                            "Failed to get profile by ID",
+                            e,
+                            mapOf(
+                                    "error" to (e.message ?: "Unknown error").toString(),
+                                    "path" to call.request.path(),
+                                    "profileId" to (call.parameters["id"] ?: "unknown")
+                            )
+                    )
+                } catch (loggingError: Exception) {
+                    application.log.error("Additionally, logging service failed", loggingError)
+                }
+
+                // Determine appropriate status code
+                val statusCode =
+                        when (e) {
+                            is ServiceException -> HttpStatusCode.fromValue(e.statusCode)
+                            is io.ktor.client.plugins.ClientRequestException -> {
+                                if (e.response.status == HttpStatusCode.NotFound)
+                                        HttpStatusCode.NotFound
+                                else HttpStatusCode.BadRequest
+                            }
+                            is io.ktor.client.plugins.ServerResponseException ->
+                                    HttpStatusCode.BadGateway
+                            else -> HttpStatusCode.InternalServerError
+                        }
+
+                call.respond(
+                        statusCode,
+                        mapOf("error" to "Failed to get profile: ${e.message ?: "Unknown error"}")
                 )
-                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Profile not found"))
             }
         }
 

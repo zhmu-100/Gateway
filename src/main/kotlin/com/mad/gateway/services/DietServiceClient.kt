@@ -1,6 +1,10 @@
 package com.mad.gateway.services
 
 import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -43,17 +47,69 @@ class DietServiceClient(client: HttpClient, baseUrl: String) :
         return post("/foods", request)
     }
 
-    /** Get a food by ID */
+    /**
+     * Get a food by ID
+     * @throws ServiceException if the food is not found (with status 404) or other service error
+     */
+    /**
+     * Get a food by ID with improved error handling
+     * @throws ServiceException for errors including "not found"
+     */
     suspend fun getFood(id: String): Food {
         logger.info { "Getting food with ID: $id" }
-        return get("/foods/$id")
+        try {
+            return get("/foods/$id")
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            // Handle 404 and other client errors
+            if (e.response.status == HttpStatusCode.NotFound) {
+                logger.info { "Food not found with ID: $id" }
+                throw ServiceException(404, "Food not found with id: $id")
+            }
+            logger.error(e) { "Client error getting food with ID: $id - ${e.response.status}" }
+            throw ServiceException(e.response.status.value, "Client error: ${e.message}")
+        } catch (e: io.ktor.client.plugins.ServerResponseException) {
+            // Handle server errors (5xx)
+            logger.error(e) { "Server error getting food with ID: $id - ${e.response.status}" }
+            throw ServiceException(e.response.status.value, "Server error: ${e.message}")
+        } catch (e: Exception) {
+            logger.error(e) { "Unexpected error getting food with ID: $id" }
+            throw ServiceException(
+                    HttpStatusCode.InternalServerError.value,
+                    "Failed to get food: ${e.message}"
+            )
+        }
     }
 
-    /** List foods with optional name filter */
+    /**
+     * List foods with optional name filter
+     * @throws ServiceException if there is a service error
+     */
+    /**
+     * List foods with optional name filter with improved error handling
+     * @throws ServiceException for service errors
+     */
     suspend fun listFoods(nameFilter: String? = null): ListFoodsResponse {
         logger.info { "Listing foods with filter: $nameFilter" }
         val queryParam = nameFilter?.let { "?nameFilter=$it" } ?: ""
-        return get("/foods$queryParam")
+        try {
+            return get("/foods$queryParam")
+        } catch (e: io.ktor.client.plugins.ClientRequestException) {
+            logger.error(e) {
+                "Client error listing foods with filter: $nameFilter - ${e.response.status}"
+            }
+            throw ServiceException(e.response.status.value, "Client error: ${e.message}")
+        } catch (e: io.ktor.client.plugins.ServerResponseException) {
+            logger.error(e) {
+                "Server error listing foods with filter: $nameFilter - ${e.response.status}"
+            }
+            throw ServiceException(e.response.status.value, "Server error: ${e.message}")
+        } catch (e: Exception) {
+            logger.error(e) { "Unexpected error listing foods with filter: $nameFilter" }
+            throw ServiceException(
+                    HttpStatusCode.InternalServerError.value,
+                    "Failed to list foods: ${e.message}"
+            )
+        }
     }
 }
 

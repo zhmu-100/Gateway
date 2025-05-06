@@ -6,7 +6,7 @@ import java.time.Instant
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the Logging service (rollbar-like) */
 class LoggingServiceClient(client: HttpClient, baseUrl: String) :
@@ -54,7 +54,7 @@ class LoggingServiceClient(client: HttpClient, baseUrl: String) :
             message: String,
             metadata: Map<String, Any>
     ): LogResponse {
-        logger.info { "Sending log to logging service: [$level] $message" }
+        loggingServiceLogger.info { "Sending log to logging service: [$level] $message" }
 
         val request =
                 LogRequest(
@@ -69,8 +69,8 @@ class LoggingServiceClient(client: HttpClient, baseUrl: String) :
             post("/log", request)
         } catch (e: Exception) {
             // If logging service is unavailable, log locally and return a fallback response
-            logger.error { "Failed to send log to logging service: ${e.message}" }
-            logger.error { "Original log message: [$level] $message" }
+            loggingServiceLogger.error { "Failed to send log to logging service: ${e.message}" }
+            loggingServiceLogger.error { "Original log message: [$level] $message" }
             LogResponse(
                     id = "local-fallback-${System.currentTimeMillis()}",
                     success = false,
@@ -89,7 +89,7 @@ class LoggingServiceClient(client: HttpClient, baseUrl: String) :
             page: Int = 1,
             pageSize: Int = 20
     ): LogSearchResponse {
-        logger.info {
+        loggingServiceLogger.info {
             "Searching logs with filters: level=$level, service=$service, message=$message"
         }
 
@@ -109,7 +109,7 @@ class LoggingServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Get log details by ID */
     suspend fun getLog(id: String): LogEntry {
-        logger.info { "Getting log details for ID: $id" }
+        loggingServiceLogger.info { "Getting log details for ID: $id" }
         return get("/logs/$id")
     }
 }

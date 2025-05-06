@@ -1,9 +1,6 @@
 package com.mad.gateway.routes
 
-import com.mad.gateway.services.DietServiceClient
-import com.mad.gateway.services.Food
-import com.mad.gateway.services.LoggingServiceClient
-import com.mad.gateway.services.Meal
+import com.mad.gateway.services.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -80,14 +77,48 @@ fun Route.dietRoutes() {
                     val foods = dietService.listFoods(nameFilter)
                     call.respond(foods)
                 } catch (e: Exception) {
-                    loggingService.logError(
-                            "Failed to list foods",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
+                    // Local logging first to ensure we always have a record
+                    application.log.error(
+                            "Failed to list foods with filter: ${call.request.queryParameters["nameFilter"]}",
+                            e
                     )
+
+                    try {
+                        loggingService.logError(
+                                "Failed to list foods",
+                                e,
+                                mapOf(
+                                        "error" to (e.message ?: "Unknown error").toString(),
+                                        "path" to call.request.path(),
+                                        "nameFilter" to
+                                                (call.request.queryParameters["nameFilter"]
+                                                        ?: "none")
+                                )
+                        )
+                    } catch (loggingError: Exception) {
+                        application.log.error("Additionally, logging service failed", loggingError)
+                    }
+
+                    // Determine appropriate status code
+                    val statusCode =
+                            when (e) {
+                                is ServiceException -> HttpStatusCode.fromValue(e.statusCode)
+                                is io.ktor.client.plugins.ClientRequestException -> {
+                                    if (e.response.status == HttpStatusCode.NotFound)
+                                            HttpStatusCode.NotFound
+                                    else HttpStatusCode.BadRequest
+                                }
+                                is io.ktor.client.plugins.ServerResponseException ->
+                                        HttpStatusCode.BadGateway
+                                else -> HttpStatusCode.InternalServerError
+                            }
+
                     call.respond(
-                            HttpStatusCode.InternalServerError,
-                            mapOf("error" to "Failed to list foods")
+                            statusCode,
+                            mapOf(
+                                    "error" to
+                                            "Failed to list foods: ${e.message ?: "Unknown error"}"
+                            )
                     )
                 }
             }
@@ -146,12 +177,41 @@ fun Route.dietRoutes() {
                     val meal = dietService.getMeal(id)
                     call.respond(meal)
                 } catch (e: Exception) {
-                    loggingService.logError(
-                            "Failed to get meal",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
+                    // Local logging first to ensure we always have a record
+                    application.log.error("Failed to get meal with ID: ${call.parameters["id"]}", e)
+
+                    try {
+                        loggingService.logError(
+                                "Failed to get meal",
+                                e,
+                                mapOf(
+                                        "error" to (e.message ?: "Unknown error").toString(),
+                                        "path" to call.request.path(),
+                                        "mealId" to (call.parameters["id"] ?: "unknown")
+                                )
+                        )
+                    } catch (loggingError: Exception) {
+                        application.log.error("Additionally, logging service failed", loggingError)
+                    }
+
+                    // Determine appropriate status code
+                    val statusCode =
+                            when (e) {
+                                is ServiceException -> HttpStatusCode.fromValue(e.statusCode)
+                                is io.ktor.client.plugins.ClientRequestException -> {
+                                    if (e.response.status == HttpStatusCode.NotFound)
+                                            HttpStatusCode.NotFound
+                                    else HttpStatusCode.BadRequest
+                                }
+                                is io.ktor.client.plugins.ServerResponseException ->
+                                        HttpStatusCode.BadGateway
+                                else -> HttpStatusCode.InternalServerError
+                            }
+
+                    call.respond(
+                            statusCode,
+                            mapOf("error" to "Failed to get meal: ${e.message ?: "Unknown error"}")
                     )
-                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Meal not found"))
                 }
             }
 
@@ -179,14 +239,48 @@ fun Route.dietRoutes() {
                     val meals = dietService.listMeals(startDate, endDate)
                     call.respond(meals)
                 } catch (e: Exception) {
-                    loggingService.logError(
-                            "Failed to list meals",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
-                    )
+                    // Local logging first to ensure we always have a record
+                    application.log.error("Failed to list meals with date range", e)
+
+                    try {
+                        loggingService.logError(
+                                "Failed to list meals",
+                                e,
+                                mapOf(
+                                        "error" to (e.message ?: "Unknown error").toString(),
+                                        "path" to call.request.path(),
+                                        "startDate" to
+                                                (call.request.queryParameters["startDate"]
+                                                        ?: "unknown"),
+                                        "endDate" to
+                                                (call.request.queryParameters["endDate"]
+                                                        ?: "unknown")
+                                )
+                        )
+                    } catch (loggingError: Exception) {
+                        application.log.error("Additionally, logging service failed", loggingError)
+                    }
+
+                    // Determine appropriate status code
+                    val statusCode =
+                            when (e) {
+                                is ServiceException -> HttpStatusCode.fromValue(e.statusCode)
+                                is io.ktor.client.plugins.ClientRequestException -> {
+                                    if (e.response.status == HttpStatusCode.NotFound)
+                                            HttpStatusCode.NotFound
+                                    else HttpStatusCode.BadRequest
+                                }
+                                is io.ktor.client.plugins.ServerResponseException ->
+                                        HttpStatusCode.BadGateway
+                                else -> HttpStatusCode.InternalServerError
+                            }
+
                     call.respond(
-                            HttpStatusCode.InternalServerError,
-                            mapOf("error" to "Failed to list meals")
+                            statusCode,
+                            mapOf(
+                                    "error" to
+                                            "Failed to list meals: ${e.message ?: "Unknown error"}"
+                            )
                     )
                 }
             }

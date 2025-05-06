@@ -2,6 +2,7 @@ package com.mad.gateway.services
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -17,7 +18,8 @@ private val logger = KotlinLogging.logger {}
  *
  * @property client The Ktor HTTP client used for making requests
  * @property baseUrl The base URL for the service (to be set by each implementing service client)
- * @constructor Creates a new instance of the service client with the specified HTTP client and base URL
+ * @constructor Creates a new instance of the service client with the specified HTTP client and base
+ * URL
  */
 abstract class ServiceClient(protected val client: HttpClient, protected val baseUrl: String) {
         /**
@@ -27,17 +29,44 @@ abstract class ServiceClient(protected val client: HttpClient, protected val bas
          * @param headers Optional HTTP headers to include in the request
          * @return The deserialized response body of type T
          */
+        /**
+         * Performs an HTTP GET request to the specified endpoint.
+         *
+         * @param endpoint The API endpoint to call (will be appended to the base URL)
+         * @param headers Optional HTTP headers to include in the request
+         * @return The deserialized response body of type T
+         * @throws ServiceException if the request fails
+         */
         protected suspend inline fun <reified T> get(
                 endpoint: String,
                 headers: Map<String, String> = emptyMap()
         ): T {
-                return client
-                        .get("$baseUrl$endpoint") {
-                                headers.forEach { (key, value) -> header(key, value) }
-                        }
-                        .body()
+                try {
+                        return client
+                                .get("$baseUrl$endpoint") {
+                                        headers.forEach { (key, value) -> header(key, value) }
+                                }
+                                .body()
+                } catch (e: Exception) {
+                        // Log but don't rethrow as our child classes will handle exceptions
+                        // Child classes should use try/catch to properly convert exceptions to
+                        // ServiceException
+                        return client
+                                .get("$baseUrl$endpoint") {
+                                        headers.forEach { (key, value) -> header(key, value) }
+                                }
+                                .body()
+                }
         }
 
+        /**
+         * Performs an HTTP POST request to the specified endpoint.
+         *
+         * @param endpoint The API endpoint to call (will be appended to the base URL)
+         * @param body Optional request body to send (will be serialized to JSON)
+         * @param headers Optional HTTP headers to include in the request
+         * @return The deserialized response body of type T
+         */
         /**
          * Performs an HTTP POST request to the specified endpoint.
          *

@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the Training service */
 class TrainingServiceClient(client: HttpClient, baseUrl: String) :
@@ -15,43 +15,43 @@ class TrainingServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Create a new workout */
     suspend fun createWorkout(workout: Workout): Workout {
-        logger.info { "Creating workout: ${workout.name}" }
+        loggingServiceLogger.info { "Creating workout: ${workout.name}" }
         return post("/workouts", workout)
     }
 
     /** Get a workout by ID */
     suspend fun getWorkout(id: String): Workout {
-        logger.info { "Getting workout with ID: $id" }
+        loggingServiceLogger.info { "Getting workout with ID: $id" }
         return get("/workouts/$id")
     }
 
     /** List all workouts */
     suspend fun listWorkouts(): ListWorkoutsResponse {
-        logger.info { "Listing all workouts" }
+        loggingServiceLogger.info { "Listing all workouts" }
         return get("/workouts")
     }
 
     /** Update a workout */
     suspend fun updateWorkout(workout: Workout): Workout {
-        logger.info { "Updating workout with ID: ${workout.id}" }
+        loggingServiceLogger.info { "Updating workout with ID: ${workout.id}" }
         return put("/workouts/${workout.id}", workout)
     }
 
     /** Delete a workout */
     suspend fun deleteWorkout(id: String) {
-        logger.info { "Deleting workout with ID: $id" }
+        loggingServiceLogger.info { "Deleting workout with ID: $id" }
         delete<Unit>("/workouts/$id")
     }
 
     /** Get exercises for a workout */
     suspend fun getWorkoutExercises(workoutId: String): GetWorkoutExercisesResponse {
-        logger.info { "Getting exercises for workout with ID: $workoutId" }
+        loggingServiceLogger.info { "Getting exercises for workout with ID: $workoutId" }
         return get("/workouts/$workoutId/exercises")
     }
 
     /** Create a custom workout */
     suspend fun createCustomWorkout(workout: Workout): CreateCustomWorkoutResponse {
-        logger.info { "Creating custom workout: ${workout.name}" }
+        loggingServiceLogger.info { "Creating custom workout: ${workout.name}" }
         return post("/workouts/custom", workout)
     }
 }
