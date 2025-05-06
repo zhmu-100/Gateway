@@ -34,37 +34,37 @@ scrape_configs:
   - job_name: "profile-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://profile-service:8083/api/profiles"]
+      - targets: ["http://profile-service:8083/profiles"]
 
   - job_name: "stats-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://statistics-service:8088/api/statistics"]
+      - targets: ["http://statistics-service:8088/statistics"]
 
   - job_name: "file-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://file-service:8089/api/files"]
+      - targets: ["http://file-service:8089/files"]
 
   - job_name: "workout-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://training-service:8084/api/training"]
+      - targets: ["http://training-service:8084/training"]
 
   - job_name: "ration-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://diet-service:8087/api/diet"]
+      - targets: ["http://diet-service:8087/diet"]
 
   - job_name: "feed-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://feed-service:8085/api/feed"]
+      - targets: ["http://feed-service:8085/feed"]
 
   - job_name: "notes-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://notes-service:8086/api/notebook"]
+      - targets: ["http://notes-service:8086/notebook"]
 
   - job_name: "push-service"
     metrics_path: "/metrics"
@@ -79,7 +79,7 @@ scrape_configs:
   - job_name: "log-service"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["http://logging-service:8082/api/logging"]
+      - targets: ["http://logging-service:8082/logging"]
 
   - job_name: "auth-service"
     metrics_path: "/metrics"
