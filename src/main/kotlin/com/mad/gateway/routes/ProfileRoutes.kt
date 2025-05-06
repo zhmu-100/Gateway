@@ -27,6 +27,10 @@ fun Route.profileRoutes() {
 
                     if (userId != null) {
                         val profile = profileService.getProfile(userId)
+                        if (profile == null) {
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Profile not found"))
+                            return@get
+                        }
                         call.respond(profile)
                     } else {
                         call.respond(
@@ -59,6 +63,10 @@ fun Route.profileRoutes() {
                                 )
 
                 val profile = profileService.getProfile(id)
+                if (profile == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Profile not found"))
+                    return@get
+                }
                 call.respond(profile)
             } catch (e: Exception) {
                 loggingService.logError(
@@ -77,6 +85,10 @@ fun Route.profileRoutes() {
                 val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 20
 
                 val profiles = profileService.listProfiles(page, pageSize)
+                if (profiles == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Profiles not found"))
+                    return@get
+                }
                 call.respond(profiles)
             } catch (e: Exception) {
                 loggingService.logError(
@@ -326,6 +338,10 @@ fun Route.profileRoutes() {
                     val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 20
 
                     val followers = profileService.listFollowers(userId, page, pageSize)
+                    if (followers == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "Followers not found"))
+                        return@get
+                    }
                     call.respond(followers)
                 } catch (e: Exception) {
                     loggingService.logError(
@@ -353,6 +369,10 @@ fun Route.profileRoutes() {
                     val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 20
 
                     val following = profileService.listFollowing(userId, page, pageSize)
+                    if (following == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "Following not found"))
+                        return@get
+                    }
                     call.respond(following)
                 } catch (e: Exception) {
                     loggingService.logError(

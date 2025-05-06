@@ -29,6 +29,10 @@ fun Route.feedRoutes() {
                                     )
 
                     val post = feedService.getPost(id)
+                    if (post == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "Post not found"))
+                        return@get
+                    }
                     call.respond(post)
                 } catch (e: Exception) {
                     loggingService.logError(
@@ -53,6 +57,10 @@ fun Route.feedRoutes() {
                                     call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 20
 
                             val posts = feedService.listPosts(viewerId, page, pageSize)
+                            if (posts == null) {
+                                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Posts not found"))
+                                return@get
+                            }
                             call.respond(posts)
                         } else {
                             call.respond(
@@ -130,6 +138,10 @@ fun Route.feedRoutes() {
                         val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 20
 
                         val comments = feedService.listComments(postId, page, pageSize)
+                        if (comments == null) {
+                            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Comments not found"))
+                            return@get
+                        }
                         call.respond(comments)
                     } catch (e: Exception) {
                         loggingService.logError(
@@ -309,6 +321,10 @@ fun Route.feedRoutes() {
                     val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull() ?: 20
 
                     val posts = feedService.listUserPosts(userId, viewerId, page, pageSize)
+                    if (posts == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to "User posts not found"))
+                        return@get
+                    }
                     call.respond(posts)
                 } catch (e: Exception) {
                     loggingService.logError(

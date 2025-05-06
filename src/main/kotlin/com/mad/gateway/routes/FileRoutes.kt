@@ -31,6 +31,10 @@ fun Route.fileRoutes() {
                                 )
 
                 val fileBytes = fileService.getFile(id)
+                if (fileBytes == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "File not found"))
+                    return@get
+                }
 
                 // Set appropriate content type based on file extension or default to octet-stream
                 val contentType =
@@ -54,6 +58,10 @@ fun Route.fileRoutes() {
                                 )
 
                 val fileFlow = fileService.getFileAsFlow(id)
+                if (fileFlow == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "File not found"))
+                    return@get
+                }
 
                 // Set appropriate content type based on file extension or default to octet-stream
                 val contentType =
@@ -82,6 +90,10 @@ fun Route.fileRoutes() {
                                 )
 
                 val urlResponse = fileService.getFileUrl(id)
+                if (urlResponse == null) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "File URL not found"))
+                    return@get
+                }
                 call.respond(urlResponse)
             } catch (e: Exception) {
                 loggingService.logError(

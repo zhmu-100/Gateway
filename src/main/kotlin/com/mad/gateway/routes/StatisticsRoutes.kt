@@ -29,7 +29,14 @@ fun Route.statisticsRoutes() {
                                     )
 
                     val gpsData = statisticsService.getGPSData(exerciseId)
-                    call.respond(gpsData)
+                    if (gpsData != null) {
+                        call.respond(gpsData)
+                    } else {
+                        call.respond(
+                                HttpStatusCode.NotFound,
+                                mapOf("error" to "GPS data not found for exercise ID: $exerciseId")
+                        )
+                    }
                 } catch (e: Exception) {
                     loggingService.logError(
                             "Failed to get GPS data",
@@ -100,7 +107,17 @@ fun Route.statisticsRoutes() {
                                     )
 
                     val heartRateData = statisticsService.getHeartRateData(exerciseId)
-                    call.respond(heartRateData)
+                    if (heartRateData != null) {
+                        call.respond(heartRateData)
+                    } else {
+                        call.respond(
+                                HttpStatusCode.NotFound,
+                                mapOf(
+                                        "error" to
+                                                "Heart rate data not found for exercise ID: $exerciseId"
+                                )
+                        )
+                    }
                 } catch (e: Exception) {
                     loggingService.logError(
                             "Failed to get heart rate data",
@@ -183,7 +200,14 @@ fun Route.statisticsRoutes() {
                     }
 
                     val caloriesData = statisticsService.getCaloriesData(userId)
-                    call.respond(caloriesData)
+                    if (caloriesData != null) {
+                        call.respond(caloriesData)
+                    } else {
+                        call.respond(
+                                HttpStatusCode.NotFound,
+                                mapOf("error" to "Calories data not found for user ID: $userId")
+                        )
+                    }
                 } catch (e: Exception) {
                     loggingService.logError(
                             "Failed to get calories data",
