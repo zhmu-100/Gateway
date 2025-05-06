@@ -5,15 +5,12 @@ import io.ktor.server.application.*
 import java.time.Instant
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Logging service (rollbar-like) */
-class LoggingServiceClient(
-    client: HttpClient,
-    baseUrl: String
-) : ServiceClient(client, baseUrl), KoinComponent {
+class LoggingServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
 
     /** Log an info message */
     suspend fun logInfo(message: String, metadata: Map<String, Any> = emptyMap()): LogResponse {
@@ -67,7 +64,19 @@ class LoggingServiceClient(
                         service = "gateway",
                         metadata = metadata
                 )
-        return post("/log", request)
+
+        return try {
+            post("/log", request)
+        } catch (e: Exception) {
+            // If logging service is unavailable, log locally and return a fallback response
+            logger.error { "Failed to send log to logging service: ${e.message}" }
+            logger.error { "Original log message: [$level] $message" }
+            LogResponse(
+                    id = "local-fallback-${System.currentTimeMillis()}",
+                    success = false,
+                    message = "Logging service unavailable: ${e.message}"
+            )
+        }
     }
 
     /** Search logs with filters */

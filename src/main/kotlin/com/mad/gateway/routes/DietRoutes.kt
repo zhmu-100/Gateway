@@ -36,12 +36,40 @@ fun Route.dietRoutes() {
                     val food = dietService.getFood(id)
                     call.respond(food)
                 } catch (e: Exception) {
-                    loggingService.logError(
-                            "Failed to get food",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error").toString())
+                    // Local logging first to ensure we always have a record
+                    application.log.error("Failed to get food with ID: ${call.parameters["id"]}", e)
+
+                    try {
+                        loggingService.logError(
+                                "Failed to get food",
+                                e,
+                                mapOf(
+                                        "error" to (e.message ?: "Unknown error").toString(),
+                                        "path" to call.request.path(),
+                                        "foodId" to (call.parameters["id"] ?: "unknown")
+                                )
+                        )
+                    } catch (loggingError: Exception) {
+                        application.log.error("Additionally, logging service failed", loggingError)
+                    }
+
+                    // Determine appropriate status code
+                    val statusCode =
+                            when (e) {
+                                is io.ktor.client.plugins.ClientRequestException -> {
+                                    if (e.response.status == HttpStatusCode.NotFound)
+                                            HttpStatusCode.NotFound
+                                    else HttpStatusCode.BadRequest
+                                }
+                                is io.ktor.client.plugins.ServerResponseException ->
+                                        HttpStatusCode.BadGateway
+                                else -> HttpStatusCode.InternalServerError
+                            }
+
+                    call.respond(
+                            statusCode,
+                            mapOf("error" to "Failed to get food: ${e.message ?: "Unknown error"}")
                     )
-                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Food not found"))
                 }
             }
 
