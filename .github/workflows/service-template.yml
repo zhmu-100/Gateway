@@ -60,7 +60,7 @@ jobs:
 
   deploy-dev:
     name: Deploy to Development
-    needs: [version, test]
+    needs: [version, build]
     uses: ./.github/workflows/deploy.yml
     with:
       service-name: ${{ inputs.service-name }}
