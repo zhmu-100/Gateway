@@ -5,6 +5,10 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 
 /**
@@ -148,6 +152,15 @@ abstract class ServiceClient(protected val client: HttpClient, protected val bas
                                 setBody(body)
                         }
                         .body()
+        }
+
+        /**
+         * Launches a coroutine in the IO dispatcher context
+         *
+         * Used for background tasks that shouldn't block the main thread
+         */
+        fun launch(block: suspend CoroutineScope.() -> Unit) {
+                GlobalScope.launch(Dispatchers.IO, block = block)
         }
 }
 
