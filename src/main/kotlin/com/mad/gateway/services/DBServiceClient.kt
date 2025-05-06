@@ -21,11 +21,26 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
         return post("/create", request)
     }
 
-    /** Read records using a custom SQL query */
+    /** Read records from a table with optional columns and filters */
+    suspend fun read(
+            table: String,
+            columns: List<String>? = null,
+            filters: Map<String, String>? = null
+    ): ReadResponse {
+        logger.info { "Reading from table: $table, columns: $columns, filters: $filters" }
+        val request = ReadRequest(table, columns, filters)
+        return post("/read", request)
+    }
+
+    /**
+     * Legacy read method using custom SQL query Note: This method is maintained for backward
+     * compatibility
+     */
     suspend fun read(query: String, params: List<String>): ReadResponse {
         logger.info { "Executing query: $query with params: $params" }
-        val request = ReadRequest(query, params)
-        return post("/read", request)
+        // Convert to the new format - this is a simplified approach and may not work for all cases
+        logger.warn { "Using legacy read method with raw SQL is not recommended" }
+        return post("/read", mapOf("query" to query, "params" to params))
     }
 
     /** Update records in the specified table */
@@ -52,7 +67,7 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
     }
 }
 
-// Data classes based on the gRPC definitions
+// Data classes based on the DB ORM service API
 
 @Serializable
 data class CreateRequest(val table: String?, val data: Map<String, String> = emptyMap())
@@ -60,7 +75,12 @@ data class CreateRequest(val table: String?, val data: Map<String, String> = emp
 @Serializable
 data class CreateResponse(val success: Boolean, val message: String, val insertedId: Long)
 
-@Serializable data class ReadRequest(val query: String?, val params: List<String>? = null)
+@Serializable
+data class ReadRequest(
+        val table: String,
+        val columns: List<String>? = null,
+        val filters: Map<String, String>? = null
+)
 
 @Serializable data class Row(val columns: Map<String, String>)
 

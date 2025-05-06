@@ -2,10 +2,10 @@ package com.mad.gateway.services
 
 import io.ktor.client.*
 import io.ktor.server.application.*
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -63,8 +63,7 @@ class DietServiceClient(client: HttpClient, baseUrl: String) :
 @Serializable
 data class Vitamin(val id: String? = null, val name: String, val amount: Double, val unit: String)
 
-@Serializable
-data class VitaminFood(val id: String, val vitamins: List<Vitamin> = emptyList())
+@Serializable data class VitaminFood(val id: String, val vitamins: List<Vitamin> = emptyList())
 
 @Serializable
 data class Mineral(val id: String? = null, val name: String, val amount: Double, val unit: String)
@@ -103,8 +102,7 @@ data class Meal(
         val date: String // ISO-8601 timestamp
 )
 
-@Serializable
-data class CreateMealRequest(val meal: Meal)
+@Serializable data class CreateMealRequest(val meal: Meal)
 
 @Serializable
 data class ListMealsResponse(
@@ -114,8 +112,7 @@ data class ListMealsResponse(
         val pageSize: Int
 )
 
-@Serializable
-data class CreateFoodRequest(val food: Food)
+@Serializable data class CreateFoodRequest(val food: Food)
 
 @Serializable
 data class ListFoodsResponse(
