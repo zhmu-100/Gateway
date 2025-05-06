@@ -106,10 +106,6 @@ fun Application.module() {
         throw e
     }
 
-    // Configure HTTP client first so it's available for service clients
-    configureHttpClient()
-    logger.debug { "HTTP client configured" }
-
     // Configure dependency injection with Koin
     configureKoin()
     logger.debug { "Dependency injection configured" }

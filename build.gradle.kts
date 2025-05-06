@@ -144,6 +144,7 @@ dependencies {
 
     // Serialization
     implementation("io.ktor:ktor-serialization-gson:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
     implementation("com.google.code.gson:gson:$gson_version")
 
     // JWT Authentication

@@ -5,53 +5,51 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
-import io.ktor.serialization.gson.*
-import io.ktor.server.application.*
+import io.ktor.client.plugins.observer.*
+import io.ktor.client.request.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 
-fun Application.configureHttpClient() {
-    // This function is called from Application.kt to ensure the HTTP client is configured
-    // The actual client is created in the createHttpClient function and injected via Koin
-}
+private val logger = KotlinLogging.logger {}
 
+/** Creates and configures an HttpClient for making API requests to other services */
 fun createHttpClient(): HttpClient {
+    logger.info { "Creating HttpClient" }
     return HttpClient(CIO) {
-        // Configure request timeouts
+        // Configure timeout
         install(HttpTimeout) {
-            requestTimeoutMillis = 30000 // 30 seconds
-            connectTimeoutMillis = 15000 // 15 seconds
-            socketTimeoutMillis = 60000 // 60 seconds
+            requestTimeoutMillis = 15000 // 15 seconds
+            connectTimeoutMillis = 5000 // 5 seconds
         }
 
-        // Configure content negotiation with GSON
+        // Configure JSON serialization
         install(ContentNegotiation) {
-            gson {
-                setPrettyPrinting()
-                serializeNulls()
-                // Add any custom type adapters here if needed
-            }
+            json(
+                    Json {
+                        prettyPrint = false
+                        isLenient = true // Accept malformed JSON
+                        ignoreUnknownKeys = true // Ignore unknown keys in JSON responses
+                        coerceInputValues = true // Coerce null values to defaults if possible
+                    }
+            )
         }
 
-        // Configure logging
+        // Log HTTP requests/responses
         install(Logging) {
             logger = Logger.DEFAULT
-            level = LogLevel.HEADERS
+            level = LogLevel.INFO
         }
 
-        // Configure default request
+        // Monitor responses
+        install(ResponseObserver) {
+            onResponse { response -> logger.debug { "HTTP response received: ${response.status}" } }
+        }
+
+        // Default request configuration
         defaultRequest {
-            // Add common headers here if needed
-            headers.append("Accept", "application/json")
-            headers.append("Content-Type", "application/json")
-        }
-
-        // Configure engine
-        engine {
-            requestTimeout = 30000 // 30 seconds
-            maxConnectionsCount = 1000
-            endpoint {
-                connectTimeout = 15000 // 15 seconds
-                connectAttempts = 3
-            }
+            // Set headers for all requests
+            headers { append("Accept", "application/json") }
         }
     }
 }
