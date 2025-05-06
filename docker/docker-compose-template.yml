@@ -41,6 +41,56 @@ services:
     networks:
       - app-network
 
+  # Keycloak service
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=keycloak
+      - KC_HTTP_RELATIVE_PATH=/auth
+    command:
+      - start-dev --http-port 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      - keycloak-db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/auth/health/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # PostgreSQL for Keycloak
+  keycloak-db:
+    image: postgres:14-alpine
+    container_name: keycloak-db
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=keycloak
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
 networks:
   app-network:
     external: true
@@ -52,3 +102,5 @@ volumes:
     name: ${SERVICE_NAME:-gateway}-logs-${DEPLOYMENT_ENV:-development}
   redis-data:
     name: redis-data-${DEPLOYMENT_ENV:-development}
+  keycloak-db-data:
+    name: keycloak-db-data-${DEPLOYMENT_ENV:-development}
