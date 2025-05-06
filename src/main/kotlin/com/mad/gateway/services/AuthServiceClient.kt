@@ -6,13 +6,14 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -28,164 +29,188 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
         // Create a coroutine scope for background tasks
         private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-        // Mutex to prevent concurrent realm initialization
-        private val realmMutex = Mutex()
-
         // Admin credentials - in production these should be loaded securely
         private val adminUsername = "admin"
         private val adminPassword = "admin"
 
-        // Token management
-        private var adminToken: String? = null
-        private var tokenExpiresAt: Long = 0
-        private val realmInitialized = AtomicBoolean(false)
+        private val adminToken = AtomicReference<String?>(null)
+        private var adminTokenExpiry = 0L
+        private var realmInitialized = false
+
+        // Token expiration tracking
+        private val tokenExpirationTimes = ConcurrentHashMap<String, Long>()
+        private val refreshTokens = ConcurrentHashMap<String, String>()
+
+        // Buffer time to refresh tokens before they expire (5 minutes)
+        private val tokenRefreshBuffer = 300_000L
 
         init {
-                // Initialize realm asynchronously to avoid blocking startup
+                // Check realm asynchronously to avoid blocking startup
                 coroutineScope.launch {
                         try {
-                                initializeRealm()
+                                checkRealmExists()
                         } catch (e: Exception) {
-                                logger.error(e) { "Failed to initialize realm: ${e.message}" }
+                                logger.error(e) { "Failed to check realm: ${e.message}" }
                         }
                 }
+
+                // Start token refresh background job
+                coroutineScope.launch { startTokenRefreshJob() }
         }
 
-        /** Get admin access token with automatic refresh */
+        /** Get admin access token */
         private suspend fun getAdminToken(): String {
-                realmMutex.withLock {
-                        val currentTime = System.currentTimeMillis()
+                val currentToken = adminToken.get()
+                val currentTime = System.currentTimeMillis()
 
-                        // Check if token is expired or about to expire (within 10 seconds)
-                        if (adminToken == null || currentTime + 10000 > tokenExpiresAt) {
-                                logger.info { "Getting admin token from Keycloak" }
-                                val response =
-                                        client.post(
-                                                "$baseUrl/realms/master/protocol/openid-connect/token"
-                                        ) {
-                                                contentType(ContentType.Application.FormUrlEncoded)
-                                                setBody(
-                                                        "client_id=admin-cli" +
-                                                                "&grant_type=password" +
-                                                                "&username=$adminUsername" +
-                                                                "&password=$adminPassword"
-                                                )
-                                        }
+                // Return current token if it's not expired (with 30 seconds buffer)
+                if (currentToken != null && currentTime < adminTokenExpiry - 30000) {
+                        return currentToken
+                }
 
-                                if (response.status.isSuccess()) {
-                                        val tokenResponse = response.body<Map<String, Any>>()
-                                        adminToken = tokenResponse["access_token"]?.toString()
-
-                                        // Calculate expiration time (subtract 5 seconds for safety
-                                        // margin)
-                                        val expiresIn =
-                                                (tokenResponse["expires_in"] as? Number)?.toInt()
-                                                        ?: 60
-                                        tokenExpiresAt =
-                                                System.currentTimeMillis() + (expiresIn * 1000) -
-                                                        5000
-
-                                        return adminToken
-                                                ?: throw RuntimeException(
-                                                        "Admin token not found in response"
-                                                )
-                                } else {
-                                        val errorBody = response.bodyAsText()
-                                        throw RuntimeException(
-                                                "Failed to get admin token: ${response.status} - $errorBody"
-                                        )
-                                }
+                logger.info { "Getting admin token from Keycloak" }
+                val response =
+                        client.post("$baseUrl/realms/master/protocol/openid-connect/token") {
+                                contentType(ContentType.Application.FormUrlEncoded)
+                                setBody(
+                                        "client_id=admin-cli" +
+                                                "&grant_type=password" +
+                                                "&username=$adminUsername" +
+                                                "&password=$adminPassword"
+                                )
                         }
 
-                        return adminToken!!
+                if (response.status.isSuccess()) {
+                        val tokenResponse = response.body<Map<String, Any>>()
+                        val newToken =
+                                tokenResponse["access_token"]?.toString()
+                                        ?: throw RuntimeException(
+                                                "Admin token not found in response"
+                                        )
+
+                        // Store token expiration time
+                        val expiresIn = tokenResponse["expires_in"]?.toString()?.toIntOrNull() ?: 60
+                        adminTokenExpiry = currentTime + (expiresIn * 1000L)
+                        adminToken.set(newToken)
+
+                        return newToken
+                } else {
+                        val errorBody = response.bodyAsText()
+                        throw RuntimeException(
+                                "Failed to get admin token: ${response.status} - $errorBody"
+                        )
                 }
         }
 
-        /** Initialize the 'mad' realm if it doesn't exist */
-        private suspend fun initializeRealm() {
-                if (realmInitialized.get()) return
+        /** Check if the 'mad' realm exists */
+        private suspend fun checkRealmExists() {
+                if (realmInitialized) return
 
-                realmMutex.withLock {
-                        if (realmInitialized.get()) return
+                try {
+                        val token = getAdminToken()
 
+                        // Check if realm exists
+                        val checkResponse =
+                                client.get("$baseUrl/admin/realms/mad") {
+                                        headers {
+                                                append(HttpHeaders.Authorization, "Bearer $token")
+                                        }
+                                }
+
+                        if (checkResponse.status.isSuccess()) {
+                                logger.info { "Realm 'mad' exists" }
+                                realmInitialized = true
+                                return
+                        } else if (checkResponse.status == HttpStatusCode.NotFound) {
+                                logger.warn {
+                                        "Realm 'mad' does not exist. Please create it manually in Keycloak."
+                                }
+                        } else {
+                                // If error is not 404 (not found), something else is wrong
+                                throw RuntimeException(
+                                        "Unexpected status checking realm: ${checkResponse.status}"
+                                )
+                        }
+                } catch (e: Exception) {
+                        logger.error(e) { "Failed to check realm: ${e.message}" }
+                        throw e
+                }
+        }
+
+        /** Track token expiration */
+        private fun trackToken(userId: String, tokenResponse: TokenResponse) {
+                val currentTime = System.currentTimeMillis()
+
+                // Store expiration time with buffer to refresh before actual expiration
+                tokenResponse.accessToken?.let { token ->
+                        val expiresAt = currentTime + (tokenResponse.expiresIn * 1000L)
+                        tokenExpirationTimes[userId] = expiresAt
+
+                        // Store refresh token for future use
+                        tokenResponse.refreshToken?.let { refreshToken ->
+                                refreshTokens[userId] = refreshToken
+                        }
+
+                        logger.debug { "Token for user $userId expires at $expiresAt" }
+                }
+        }
+
+        /** Start background job to refresh tokens */
+        private suspend fun startTokenRefreshJob() {
+                while (true) {
                         try {
-                                val token = getAdminToken()
-
-                                // Check if realm exists
-                                val checkResponse =
-                                        client.get("$baseUrl/admin/realms/mad") {
-                                                headers {
-                                                        append(
-                                                                HttpHeaders.Authorization,
-                                                                "Bearer $token"
-                                                        )
-                                                }
-                                        }
-
-                                if (checkResponse.status.isSuccess()) {
-                                        logger.info { "Realm 'mad' already exists" }
-                                        realmInitialized.set(true)
-                                        return
-                                } else if (checkResponse.status != HttpStatusCode.NotFound) {
-                                        // If error is not 404 (not found), something else is wrong
-                                        throw RuntimeException(
-                                                "Unexpected status checking realm: ${checkResponse.status}"
-                                        )
-                                }
-
-                                // Create the realm
-                                logger.info { "Creating 'mad' realm in Keycloak" }
-                                val createResponse =
-                                        client.post("$baseUrl/admin/realms") {
-                                                contentType(ContentType.Application.Json)
-                                                headers {
-                                                        append(
-                                                                HttpHeaders.Authorization,
-                                                                "Bearer $token"
-                                                        )
-                                                }
-                                                setBody(
-                                                        """
-                                {
-                                    "realm": "mad",
-                                    "enabled": true,
-                                    "displayName": "MAD Application",
-                                    "displayNameHtml": "<div class='kc-logo-text'><span>MAD Application</span></div>",
-                                    "clients": [
-                                        {
-                                            "clientId": "mad-mobile-app",
-                                            "directAccessGrantsEnabled": true,
-                                            "publicClient": true,
-                                            "redirectUris": ["*"],
-                                            "webOrigins": ["*"]
-                                        }
-                                    ]
-                                }
-                                """.trimIndent()
-                                                )
-                                        }
-
-                                if (createResponse.status.isSuccess()) {
-                                        logger.info { "Successfully created 'mad' realm" }
-                                        realmInitialized.set(true)
-                                } else if (createResponse.status == HttpStatusCode.Conflict) {
-                                        // If 409 Conflict, the realm already exists (likely created
-                                        // by another instance/thread)
-                                        logger.info {
-                                                "Realm 'mad' already exists (created by another process)"
-                                        }
-                                        realmInitialized.set(true)
-                                } else {
-                                        val errorBody = createResponse.bodyAsText()
-                                        throw RuntimeException(
-                                                "Failed to create realm: ${createResponse.status} - $errorBody"
-                                        )
-                                }
+                                refreshExpiredTokens()
+                                delay(60000) // Check every minute
                         } catch (e: Exception) {
-                                logger.error(e) { "Failed to initialize realm: ${e.message}" }
-                                throw e
+                                logger.error(e) { "Error in token refresh job: ${e.message}" }
+                                delay(120000) // Wait longer after error
                         }
                 }
+        }
+
+        /** Check and refresh expired tokens */
+        private suspend fun refreshExpiredTokens() {
+                val currentTime = System.currentTimeMillis()
+
+                tokenExpirationTimes.forEach { (userId, expiryTime) ->
+                        // Refresh if token expires soon (within buffer time)
+                        if (expiryTime - currentTime < tokenRefreshBuffer) {
+                                val refreshToken = refreshTokens[userId] ?: return@forEach
+                                try {
+                                        val newTokens = refreshToken(refreshToken)
+                                        // Update tracking with new tokens
+                                        trackToken(userId, newTokens)
+                                        logger.info {
+                                                "Successfully refreshed token for user $userId"
+                                        }
+                                } catch (e: Exception) {
+                                        logger.error(e) {
+                                                "Failed to refresh token for user $userId: ${e.message}"
+                                        }
+                                        // Remove expired tokens
+                                        tokenExpirationTimes.remove(userId)
+                                        refreshTokens.remove(userId)
+                                }
+                        }
+                }
+        }
+
+        /** Extract user ID from token */
+        private fun extractUserId(token: String): String {
+                // Simple extraction from JWT token without validation
+                // In production, use a proper JWT parser
+                try {
+                        val parts = token.split(".")
+                        if (parts.size > 1) {
+                                val payload = java.util.Base64.getUrlDecoder().decode(parts[1])
+                                val payloadText = String(payload)
+                                val subMatch = "\"sub\":\"([^\"]+)\"".toRegex().find(payloadText)
+                                return subMatch?.groupValues?.get(1) ?: "unknown"
+                        }
+                } catch (e: Exception) {
+                        logger.warn { "Could not extract user ID from token: ${e.message}" }
+                }
+                return "unknown"
         }
 
         /** Login with username and password */
@@ -193,8 +218,8 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
                 logger.info { "Authenticating user: $username" }
 
                 // Ensure realm is initialized
-                if (!realmInitialized.get()) {
-                        initializeRealm()
+                if (!realmInitialized) {
+                        checkRealmExists()
                 }
 
                 try {
@@ -211,6 +236,13 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
 
                         if (response.status.isSuccess()) {
                                 val tokenResponse: TokenResponse = response.body()
+
+                                // Track token expiration
+                                tokenResponse.accessToken?.let { token ->
+                                        val userId = extractUserId(token)
+                                        trackToken(userId, tokenResponse)
+                                }
+
                                 return tokenResponse
                         } else {
                                 val errorBody = response.bodyAsText()
@@ -241,6 +273,13 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
 
                         if (response.status.isSuccess()) {
                                 val tokenResponse: TokenResponse = response.body()
+
+                                // Update token tracking
+                                tokenResponse.accessToken?.let { token ->
+                                        val userId = extractUserId(token)
+                                        trackToken(userId, tokenResponse)
+                                }
+
                                 return tokenResponse
                         } else {
                                 val errorBody = response.bodyAsText()
@@ -318,12 +357,12 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
                 logger.info { "Registering new user: $username" }
 
                 // Ensure realm is initialized
-                if (!realmInitialized.get()) {
-                        initializeRealm()
+                if (!realmInitialized) {
+                        checkRealmExists()
                 }
 
                 try {
-                        // Get admin token (will refresh if needed)
+                        // Get admin token first
                         val token = getAdminToken()
 
                         val response =
@@ -447,14 +486,14 @@ data class RegistrationRequest(
 
 @Serializable
 data class TokenResponse(
-        val accessToken: String? = null,
-        val expiresIn: Int = 0,
-        val refreshExpiresIn: Int = 0,
-        val refreshToken: String? = null,
-        val tokenType: String? = null,
-        val notBeforePolicy: Int = 0,
-        val sessionState: String? = null,
-        val scope: String? = null
+        @SerialName("access_token") val accessToken: String? = null,
+        @SerialName("expires_in") val expiresIn: Int = 0,
+        @SerialName("refresh_expires_in") val refreshExpiresIn: Int = 0,
+        @SerialName("refresh_token") val refreshToken: String? = null,
+        @SerialName("token_type") val tokenType: String? = null,
+        @SerialName("not-before-policy") val notBeforePolicy: Int = 0,
+        @SerialName("session_state") val sessionState: String? = null,
+        @SerialName("scope") val scope: String? = null
 )
 
 @Serializable
