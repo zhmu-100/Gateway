@@ -16,15 +16,10 @@ private val logger = KotlinLogging.logger {}
  * encapsulates common HTTP operations and handles the communication with backend services.
  *
  * @property client The Ktor HTTP client used for making requests
+ * @property baseUrl The base URL for the service (to be set by each implementing service client)
+ * @constructor Creates a new instance of the service client with the specified HTTP client and base URL
  */
-abstract class ServiceClient(protected val client: HttpClient) {
-        /**
-         * The base URL for the service.
-         *
-         * This should be set by each implementing service client, typically from configuration.
-         */
-        protected abstract val baseUrl: String
-
+abstract class ServiceClient(protected val client: HttpClient, protected val baseUrl: String) {
         /**
          * Performs an HTTP GET request to the specified endpoint.
          *

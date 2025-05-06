@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Auth service (Keycloak) */
-class AuthServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class AuthServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
         private val application: Application by inject()
-        override val baseUrl: String =
-                application.environment.config.property("services.auth.url").getString()
 
         /** Login with username and password */
         suspend fun login(username: String, password: String): TokenResponse {

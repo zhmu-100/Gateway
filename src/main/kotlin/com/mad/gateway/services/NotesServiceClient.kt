@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Notes service */
-class NotesServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class NotesServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.notes.url").getString()
 
     // Note operations
 

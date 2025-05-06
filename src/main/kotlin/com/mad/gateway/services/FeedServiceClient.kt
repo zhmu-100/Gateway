@@ -16,16 +16,9 @@ private val logger = KotlinLogging.logger {}
  *
  * @property client The HTTP client used for making requests
  */
-class FeedServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class FeedServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-
-    /**
-     * The base URL for the Feed service.
-     *
-     * Retrieved from the application configuration.
-     */
-    override val baseUrl: String =
-            application.environment.config.property("services.feed.url").getString()
 
     /**
      * Creates a new post in the feed.

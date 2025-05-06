@@ -18,10 +18,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the File service (MinIO) */
-class FileServiceClient(client: HttpClient, private val fileServiceUrl: String) :
-        ServiceClient(client), KoinComponent {
+class FileServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String = fileServiceUrl
 
     // Convert PartData to FormBuilder
     suspend fun uploadFile(

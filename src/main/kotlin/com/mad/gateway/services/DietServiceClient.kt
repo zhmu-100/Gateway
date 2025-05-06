@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Diet service */
-class DietServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class DietServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.diet.url").getString()
 
     // Meal operations
 

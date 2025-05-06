@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Training service */
-class TrainingServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class TrainingServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.training.url").getString()
 
     /** Create a new workout */
     suspend fun createWorkout(workout: Workout): Workout {

@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Database service */
-class DBServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class DBServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.db.url").getString()
 
     /** Create a new record in the specified table */
     suspend fun create(table: String, data: Map<String, String>): CreateResponse {

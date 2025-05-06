@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Statistics service */
-class StatisticsServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class StatisticsServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.statistics.url").getString()
 
     /** Get GPS data for an exercise */
     suspend fun getGPSData(exerciseId: String): GetGPSDataResponse {

@@ -10,10 +10,10 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Logging service (rollbar-like) */
-class LoggingServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
-    private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.logging.url").getString()
+class LoggingServiceClient(
+    client: HttpClient,
+    baseUrl: String
+) : ServiceClient(client, baseUrl), KoinComponent {
 
     /** Log an info message */
     suspend fun logInfo(message: String, metadata: Map<String, Any> = emptyMap()): LogResponse {

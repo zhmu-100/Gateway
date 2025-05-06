@@ -9,10 +9,9 @@ import org.koin.core.component.inject
 private val logger = KotlinLogging.logger {}
 
 /** Client for the Profile service */
-class ProfileServiceClient(client: HttpClient) : ServiceClient(client), KoinComponent {
+class ProfileServiceClient(client: HttpClient, baseUrl: String) :
+        ServiceClient(client, baseUrl), KoinComponent {
     private val application: Application by inject()
-    override val baseUrl: String =
-            application.environment.config.property("services.profile.url").getString()
 
     /** Create a new user profile */
     suspend fun createProfile(profile: UserProfile): UserProfile {
