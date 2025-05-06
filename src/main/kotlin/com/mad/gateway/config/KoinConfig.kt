@@ -41,12 +41,6 @@ fun Application.configureKoin() {
                 }
 
                 single {
-                    val baseUrl = System.getenv("LOGGING_SERVICE_URL")
-                    logger.debug("Starting LoggingServiceClient on $baseUrl")
-                    LoggingServiceClient(get(), baseUrl)
-                }
-
-                single {
                     val baseUrl = System.getenv("PROFILE_SERVICE_URL")
                     logger.debug("Starting ProfileServiceClient on $baseUrl")
                     ProfileServiceClient(get(), baseUrl)

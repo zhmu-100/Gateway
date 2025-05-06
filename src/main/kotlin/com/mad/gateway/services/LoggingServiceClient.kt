@@ -2,12 +2,11 @@ package com.mad.gateway.services
 
 import java.time.Instant
 import mu.KotlinLogging
-import org.koin.core.component.KoinComponent
 
 private val logger = KotlinLogging.logger {}
 
 /** Simple terminal logger */
-class Logger : KoinComponent {
+class LoggingServiceClient {
 
     /** Log an info message */
     fun logInfo(message: String, metadata: Map<String, Any> = emptyMap()) {
