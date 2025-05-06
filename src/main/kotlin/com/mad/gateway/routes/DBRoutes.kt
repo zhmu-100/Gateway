@@ -1,5 +1,6 @@
 package com.mad.gateway.routes
 
+import com.mad.gateway.config.fromJson
 import com.mad.gateway.services.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -23,14 +24,24 @@ fun Route.dbRoutes() {
         authenticate("auth-jwt") {
             post("/create") {
                 try {
-                    val request = call.receive<CreateRequest>()
-                    logger.info { "Received create request for table: ${request.table}" }
+                    // Read the request body as text first
+                    val requestBody = call.receiveText()
+                    logger.info {
+                        "Received create request with body: $requestBody"
+                    }
+
+                    // Then parse it
+                    val request = requestBody.fromJson<CreateRequest>()
 
                     // Validate request
-                    if (request.table.isNullOrBlank() || request.data.isEmpty()) {
+                    if (request.table.isNullOrBlank() || request.data.isEmpty()
+                    ) {
                         call.respond(
-                                HttpStatusCode.BadRequest,
-                                mapOf("error" to "Invalid request: table and data are required")
+                            HttpStatusCode.BadRequest,
+                            mapOf(
+                                "error" to
+                                        "Invalid request: table and data are required"
+                            )
                         )
                         return@post
                     }
@@ -41,19 +52,25 @@ fun Route.dbRoutes() {
                     val principal = call.principal<JWTPrincipal>()
                     val userId = principal?.payload?.subject
                     loggingService.logInfo(
-                            "Record created in table: ${request.table}",
-                            mapOf("userId" to (userId ?: "unknown"), "table" to request.table)
+                        "Record created in table: ${request.table}",
+                        mapOf(
+                            "userId" to (userId ?: "unknown"),
+                            "table" to request.table
+                        )
                     )
                 } catch (e: Exception) {
                     logger.error(e) { "Failed to create record: ${e.message}" }
                     loggingService.logError(
-                            "Failed to create record",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
+                        "Failed to create record",
+                        e,
+                        mapOf("error" to (e.message ?: "Unknown error"))
                     )
                     call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Failed to create record: ${e.message}")
+                        HttpStatusCode.BadRequest,
+                        mapOf(
+                            "error" to
+                                    "Failed to create record: ${e.message}"
+                        )
                     )
                 }
             }
@@ -63,40 +80,56 @@ fun Route.dbRoutes() {
         authenticate("auth-jwt") {
             post("/read") {
                 try {
+                    // Read the request body as text first
                     val requestBody = call.receiveText()
-                    logger.info { "Received read request with body: $requestBody" }
+                    logger.info {
+                        "Received read request with body: $requestBody"
+                    }
 
-                    val request = call.receive<ReadRequest>()
+                    // Then parse it manually using our extension function
+                    val request = requestBody.fromJson<ReadRequest>()
 
                     // Validate request
                     if (request.query.isNullOrBlank()) {
                         call.respond(
-                                HttpStatusCode.BadRequest,
-                                mapOf("error" to "Query parameter is required")
+                            HttpStatusCode.BadRequest,
+                            mapOf(
+                                "error" to
+                                        "Query parameter is required"
+                            )
                         )
                         return@post
                     }
 
-                    logger.info { "Processing read request with query: ${request.query}" }
-                    val response = dbService.read(request.query, request.params ?: emptyList())
+                    logger.info {
+                        "Processing read request with query: ${request.query}"
+                    }
+                    val response =
+                        dbService.read(
+                            request.query,
+                            request.params ?: emptyList()
+                        )
                     call.respond(response)
 
                     val principal = call.principal<JWTPrincipal>()
                     val userId = principal?.payload?.subject
                     loggingService.logInfo(
-                            "Query executed: ${request.query}",
-                            mapOf("userId" to (userId ?: "unknown"))
+                        "Query executed: ${request.query}",
+                        mapOf("userId" to (userId ?: "unknown"))
                     )
                 } catch (e: Exception) {
                     logger.error(e) { "Failed to execute query: ${e.message}" }
                     loggingService.logError(
-                            "Failed to execute query",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
+                        "Failed to execute query",
+                        e,
+                        mapOf("error" to (e.message ?: "Unknown error"))
                     )
                     call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Failed to execute query: ${e.message}")
+                        HttpStatusCode.BadRequest,
+                        mapOf(
+                            "error" to
+                                    "Failed to execute query: ${e.message}"
+                        )
                     )
                 }
             }
@@ -106,53 +139,63 @@ fun Route.dbRoutes() {
         authenticate("auth-jwt") {
             post("/update") {
                 try {
-                    val request = call.receive<UpdateRequest>()
-                    logger.info { "Received update request for table: ${request.table}" }
+                    // Read the request body as text first
+                    val requestBody = call.receiveText()
+                    logger.info {
+                        "Received update request with body: $requestBody"
+                    }
+
+                    // Then parse it
+                    val request = requestBody.fromJson<UpdateRequest>()
 
                     // Validate request
                     if (request.table.isNullOrBlank() ||
-                                    request.data.isEmpty() ||
-                                    request.condition.isNullOrBlank()
+                        request.data.isEmpty() ||
+                        request.condition.isNullOrBlank()
                     ) {
                         call.respond(
-                                HttpStatusCode.BadRequest,
-                                mapOf(
-                                        "error" to
-                                                "Invalid request: table, data, and condition are required"
-                                )
+                            HttpStatusCode.BadRequest,
+                            mapOf(
+                                "error" to
+                                        "Invalid request: table, data, and condition are required"
+                            )
                         )
                         return@post
                     }
 
                     val response =
-                            dbService.update(
-                                    request.table,
-                                    request.data,
-                                    request.condition,
-                                    request.conditionParams ?: emptyList()
-                            )
+                        dbService.update(
+                            request.table,
+                            request.data,
+                            request.condition,
+                            request.conditionParams ?: emptyList()
+                        )
                     call.respond(response)
 
                     val principal = call.principal<JWTPrincipal>()
                     val userId = principal?.payload?.subject
                     loggingService.logInfo(
-                            "Records updated in table: ${request.table}",
-                            mapOf(
-                                    "userId" to (userId ?: "unknown"),
-                                    "table" to request.table,
-                                    "rowsAffected" to response.rowsAffected.toString()
-                            )
+                        "Records updated in table: ${request.table}",
+                        mapOf(
+                            "userId" to (userId ?: "unknown"),
+                            "table" to request.table,
+                            "rowsAffected" to
+                                    response.rowsAffected.toString()
+                        )
                     )
                 } catch (e: Exception) {
                     logger.error(e) { "Failed to update records: ${e.message}" }
                     loggingService.logError(
-                            "Failed to update records",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
+                        "Failed to update records",
+                        e,
+                        mapOf("error" to (e.message ?: "Unknown error"))
                     )
                     call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Failed to update records: ${e.message}")
+                        HttpStatusCode.BadRequest,
+                        mapOf(
+                            "error" to
+                                    "Failed to update records: ${e.message}"
+                        )
                     )
                 }
             }
@@ -162,49 +205,61 @@ fun Route.dbRoutes() {
         authenticate("auth-jwt") {
             post("/delete") {
                 try {
-                    val request = call.receive<DeleteRequest>()
-                    logger.info { "Received delete request for table: ${request.table}" }
+                    // Read the request body as text first
+                    val requestBody = call.receiveText()
+                    logger.info {
+                        "Received delete request with body: $requestBody"
+                    }
+
+                    // Then parse it
+                    val request = requestBody.fromJson<DeleteRequest>()
 
                     // Validate request
-                    if (request.table.isNullOrBlank() || request.condition.isNullOrBlank()) {
+                    if (request.table.isNullOrBlank() ||
+                        request.condition.isNullOrBlank()
+                    ) {
                         call.respond(
-                                HttpStatusCode.BadRequest,
-                                mapOf(
-                                        "error" to
-                                                "Invalid request: table and condition are required"
-                                )
+                            HttpStatusCode.BadRequest,
+                            mapOf(
+                                "error" to
+                                        "Invalid request: table and condition are required"
+                            )
                         )
                         return@post
                     }
 
                     val response =
-                            dbService.delete(
-                                    request.table,
-                                    request.condition,
-                                    request.conditionParams ?: emptyList()
-                            )
+                        dbService.delete(
+                            request.table,
+                            request.condition,
+                            request.conditionParams ?: emptyList()
+                        )
                     call.respond(response)
 
                     val principal = call.principal<JWTPrincipal>()
                     val userId = principal?.payload?.subject
                     loggingService.logInfo(
-                            "Records deleted from table: ${request.table}",
-                            mapOf(
-                                    "userId" to (userId ?: "unknown"),
-                                    "table" to request.table,
-                                    "rowsAffected" to response.rowsAffected.toString()
-                            )
+                        "Records deleted from table: ${request.table}",
+                        mapOf(
+                            "userId" to (userId ?: "unknown"),
+                            "table" to request.table,
+                            "rowsAffected" to
+                                    response.rowsAffected.toString()
+                        )
                     )
                 } catch (e: Exception) {
                     logger.error(e) { "Failed to delete records: ${e.message}" }
                     loggingService.logError(
-                            "Failed to delete records",
-                            e,
-                            mapOf("error" to (e.message ?: "Unknown error"))
+                        "Failed to delete records",
+                        e,
+                        mapOf("error" to (e.message ?: "Unknown error"))
                     )
                     call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Failed to delete records: ${e.message}")
+                        HttpStatusCode.BadRequest,
+                        mapOf(
+                            "error" to
+                                    "Failed to delete records: ${e.message}"
+                        )
                     )
                 }
             }
