@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the Database service */
 class DBServiceClient(client: HttpClient, baseUrl: String) :
@@ -15,14 +15,14 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Create a new record in the specified table */
     suspend fun create(table: String, data: Map<String, String>): CreateResponse {
-        logger.info { "Creating record in table: $table" }
+        loggingServiceLogger.info { "Creating record in table: $table" }
         val request = CreateRequest(table, data)
         return post("/create", request)
     }
 
     /** Read records using a custom SQL query */
     suspend fun read(query: String, params: List<String>): ReadResponse {
-        logger.info { "Executing query: $query with params: $params" }
+        loggingServiceLogger.info { "Executing query: $query with params: $params" }
         val request = ReadRequest(query, params)
         return post("/read", request)
     }
@@ -34,7 +34,7 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
             condition: String,
             conditionParams: List<String>
     ): UpdateResponse {
-        logger.info { "Updating records in table: $table with condition: $condition" }
+        loggingServiceLogger.info { "Updating records in table: $table with condition: $condition" }
         val request = UpdateRequest(table, data, condition, conditionParams)
         return post("/update", request)
     }
@@ -45,7 +45,7 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
             condition: String,
             conditionParams: List<String>
     ): DeleteResponse {
-        logger.info { "Deleting records from table: $table with condition: $condition" }
+        loggingServiceLogger.info { "Deleting records from table: $table with condition: $condition" }
         val request = DeleteRequest(table, condition, conditionParams)
         return post("/delete", request)
     }

@@ -22,134 +22,178 @@ private val logger = KotlinLogging.logger {}
  * URL
  */
 abstract class ServiceClient(protected val client: HttpClient, protected val baseUrl: String) {
-        /**
-         * Performs an HTTP GET request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         */
-        /**
-         * Performs an HTTP GET request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         * @throws ServiceException if the request fails
-         */
-        protected suspend inline fun <reified T> get(
-                endpoint: String,
-                headers: Map<String, String> = emptyMap()
-        ): T {
-                try {
-                        return client
-                                .get("$baseUrl$endpoint") {
-                                        headers.forEach { (key, value) -> header(key, value) }
-                                }
-                                .body()
-                } catch (e: Exception) {
-                        // Log but don't rethrow as our child classes will handle exceptions
-                        // Child classes should use try/catch to properly convert exceptions to
-                        // ServiceException
-                        return client
-                                .get("$baseUrl$endpoint") {
-                                        headers.forEach { (key, value) -> header(key, value) }
-                                }
-                                .body()
+    /**
+     * Performs an HTTP request to the specified endpoint and handles response processing.
+     * This is a non-inline helper method to avoid logger access issues in inline functions.
+     */
+    protected suspend fun <T> handleHttpRequest(
+        methodName: String,
+        endpoint: String,
+        call: suspend () -> HttpResponse,
+        transform: suspend (HttpResponse) -> T
+    ): T {
+        try {
+            logger.debug { "Making $methodName request to $baseUrl$endpoint" }
+            val response = call()
+            
+            logger.debug { "Response status: ${response.status}, Content-Type: ${response.contentType()}" }
+            
+            if (!response.status.isSuccess()) {
+                logger.warn { "Non-success status code: ${response.status} from $baseUrl$endpoint" }
+                throw ServiceException(response.status.value, "Service returned error status: ${response.status}")
+            }
+            
+            return transform(response)
+        } catch (e: ServiceException) {
+            // Already formatted, just rethrow
+            throw e
+        } catch (e: NoTransformationFoundException) {
+            // This specifically handles the case in the error logs
+            logger.error(e) { "Error deserializing response from $baseUrl$endpoint: ${e.message}" }
+            throw ServiceException(
+                HttpStatusCode.InternalServerError.value,
+                "Failed to deserialize response: ${e.message}"
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "Error in $methodName request to $baseUrl$endpoint: ${e.message}" }
+            throw ServiceException(
+                HttpStatusCode.InternalServerError.value,
+                "Failed to process response: ${e.message}"
+            )
+        }
+    }
+
+    /**
+     * Performs an HTTP GET request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     * @throws ServiceException if the request fails
+     */
+    protected suspend inline fun <reified T> get(
+        endpoint: String,
+        headers: Map<String, String> = emptyMap()
+    ): T {
+        return handleHttpRequest(
+            "GET",
+            endpoint,
+            {
+                client.get("$baseUrl$endpoint") {
+                    headers.forEach { (key, value) -> header(key, value) }
                 }
-        }
+            },
+            { response -> response.body() }
+        )
+    }
 
-        /**
-         * Performs an HTTP POST request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param body Optional request body to send (will be serialized to JSON)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         */
-        /**
-         * Performs an HTTP POST request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param body Optional request body to send (will be serialized to JSON)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         */
-        protected suspend inline fun <reified T> post(
-                endpoint: String,
-                body: Any? = null,
-                headers: Map<String, String> = emptyMap()
-        ): T {
-                return client
-                        .post("$baseUrl$endpoint") {
-                                headers.forEach { (key, value) -> header(key, value) }
-                                contentType(ContentType.Application.Json)
-                                setBody(body)
-                        }
-                        .body()
-        }
+    /**
+     * Performs an HTTP POST request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param body Optional request body to send (will be serialized to JSON)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     * @throws ServiceException if the request fails
+     */
+    protected suspend inline fun <reified T> post(
+        endpoint: String,
+        body: Any? = null,
+        headers: Map<String, String> = emptyMap()
+    ): T {
+        return handleHttpRequest(
+            "POST",
+            endpoint,
+            {
+                client.post("$baseUrl$endpoint") {
+                    headers.forEach { (key, value) -> header(key, value) }
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
+            },
+            { response -> response.body() }
+        )
+    }
 
-        /**
-         * Performs an HTTP PUT request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param body Optional request body to send (will be serialized to JSON)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         */
-        protected suspend inline fun <reified T> put(
-                endpoint: String,
-                body: Any? = null,
-                headers: Map<String, String> = emptyMap()
-        ): T {
-                return client
-                        .put("$baseUrl$endpoint") {
-                                headers.forEach { (key, value) -> header(key, value) }
-                                contentType(ContentType.Application.Json)
-                                setBody(body)
-                        }
-                        .body()
-        }
+    /**
+     * Performs an HTTP PUT request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param body Optional request body to send (will be serialized to JSON)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     * @throws ServiceException if the request fails
+     */
+    protected suspend inline fun <reified T> put(
+        endpoint: String,
+        body: Any? = null,
+        headers: Map<String, String> = emptyMap()
+    ): T {
+        return handleHttpRequest(
+            "PUT",
+            endpoint,
+            {
+                client.put("$baseUrl$endpoint") {
+                    headers.forEach { (key, value) -> header(key, value) }
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
+            },
+            { response -> response.body() }
+        )
+    }
 
-        /**
-         * Performs an HTTP DELETE request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         */
-        protected suspend inline fun <reified T> delete(
-                endpoint: String,
-                headers: Map<String, String> = emptyMap()
-        ): T {
-                return client
-                        .delete("$baseUrl$endpoint") {
-                                headers.forEach { (key, value) -> header(key, value) }
-                        }
-                        .body()
-        }
+    /**
+     * Performs an HTTP DELETE request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     * @throws ServiceException if the request fails
+     */
+    protected suspend inline fun <reified T> delete(
+        endpoint: String,
+        headers: Map<String, String> = emptyMap()
+    ): T {
+        return handleHttpRequest(
+            "DELETE",
+            endpoint,
+            {
+                client.delete("$baseUrl$endpoint") {
+                    headers.forEach { (key, value) -> header(key, value) }
+                }
+            },
+            { response -> response.body() }
+        )
+    }
 
-        /**
-         * Performs an HTTP PATCH request to the specified endpoint.
-         *
-         * @param endpoint The API endpoint to call (will be appended to the base URL)
-         * @param body Optional request body to send (will be serialized to JSON)
-         * @param headers Optional HTTP headers to include in the request
-         * @return The deserialized response body of type T
-         */
-        protected suspend inline fun <reified T> patch(
-                endpoint: String,
-                body: Any? = null,
-                headers: Map<String, String> = emptyMap()
-        ): T {
-                return client
-                        .patch("$baseUrl$endpoint") {
-                                headers.forEach { (key, value) -> header(key, value) }
-                                contentType(ContentType.Application.Json)
-                                setBody(body)
-                        }
-                        .body()
-        }
+    /**
+     * Performs an HTTP PATCH request to the specified endpoint.
+     *
+     * @param endpoint The API endpoint to call (will be appended to the base URL)
+     * @param body Optional request body to send (will be serialized to JSON)
+     * @param headers Optional HTTP headers to include in the request
+     * @return The deserialized response body of type T
+     * @throws ServiceException if the request fails
+     */
+    protected suspend inline fun <reified T> patch(
+        endpoint: String,
+        body: Any? = null,
+        headers: Map<String, String> = emptyMap()
+    ): T {
+        return handleHttpRequest(
+            "PATCH",
+            endpoint,
+            {
+                client.patch("$baseUrl$endpoint") {
+                    headers.forEach { (key, value) -> header(key, value) }
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
+            },
+            { response -> response.body() }
+        )
+    }
 }
 
 /**
@@ -162,4 +206,4 @@ abstract class ServiceClient(protected val client: HttpClient, protected val bas
  * @property errorBody The error response body as a string
  */
 class ServiceException(val statusCode: Int, val errorBody: String) :
-        RuntimeException("Service request failed with status $statusCode: $errorBody")
+    RuntimeException("Service request failed with status $statusCode: $errorBody")

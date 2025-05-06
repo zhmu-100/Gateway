@@ -6,6 +6,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.statement.*
+import io.ktor.client.call.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
@@ -53,29 +54,35 @@ fun createHttpClient(): HttpClient {
             headers.append("Accept-Charset", "UTF-8")
         }
 
-        // Add exception handler
-        expectSuccess = false
+        // Configure the client to throw exceptions for non-2xx responses
+        // Our ServiceClient will handle these exceptions appropriately
+        expectSuccess = true
 
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, request ->
-                val clientException = exception as? ClientRequestException
-                val exceptionResponse = clientException?.response
-
-                // Log the exception with appropriate level based on the error
-                if (exceptionResponse?.status == HttpStatusCode.NotFound) {
-                    logger.info {
-                        "Resource not found at ${request.url}: ${exceptionResponse.status}"
+                when (exception) {
+                    is NoTransformationFoundException -> {
+                        // Special handling for deserialization issues
+                        logger.error {
+                            "Failed to deserialize response from ${request.url}: ${exception.message}"
+                        }
                     }
-                } else {
-                    logger.error(exception) {
-                        "Request to ${request.url} failed: ${exception.message}"
+                    is ClientRequestException -> {
+                        val status = exception.response.status
+                        if (status == HttpStatusCode.NotFound) {
+                            logger.info { "Resource not found at ${request.url}: ${status}" }
+                        } else {
+                            logger.warn { "Client error for request to ${request.url}: ${status}" }
+                        }
+                    }
+                    is ServerResponseException -> {
+                        logger.error { "Server error for request to ${request.url}: ${exception.response.status}" }
+                    }
+                    else -> {
+                        logger.error(exception) { "Request to ${request.url} failed: ${exception.message}" }
                     }
                 }
-
-                // Don't throw for 404s, let the service client handle them
-                if (exceptionResponse?.status == HttpStatusCode.NotFound) {
-                    return@handleResponseExceptionWithRequest
-                }
+                // Let ServiceClient handle these exceptions properly
             }
         }
 

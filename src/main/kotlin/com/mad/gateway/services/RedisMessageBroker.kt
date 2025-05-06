@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.JedisPubSub
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Redis message broker for inter-service communication */
 class RedisMessageBroker(application: Application) : KoinComponent {
@@ -40,7 +40,7 @@ class RedisMessageBroker(application: Application) : KoinComponent {
     private val pubSubThreads = mutableMapOf<String, Thread>()
 
     init {
-        logger.info { "Initializing Redis message broker at $redisHost:$redisPort" }
+        loggingServiceLogger.info { "Initializing Redis message broker at $redisHost:$redisPort" }
     }
 
     /** Publish a message to a channel */
@@ -49,7 +49,7 @@ class RedisMessageBroker(application: Application) : KoinComponent {
             jedisPool.resource.use { jedis ->
                 val jsonMessage = GsonProvider.gson.toJson(message)
                 jedis.publish(channel, jsonMessage)
-                logger.debug { "Published message to channel $channel: $jsonMessage" }
+                loggingServiceLogger.debug { "Published message to channel $channel: $jsonMessage" }
             }
         }
     }
@@ -72,12 +72,12 @@ class RedisMessageBroker(application: Application) : KoinComponent {
                                     object : JedisPubSub() {
                                         override fun onMessage(channel: String, message: String) {
                                             try {
-                                                logger.debug {
+                                                loggingServiceLogger.debug {
                                                     "Received message from channel $channel: $message"
                                                 }
                                                 subscribers[channel]?.forEach { it(message) }
                                             } catch (e: Exception) {
-                                                logger.error(e) {
+                                                loggingServiceLogger.error(e) {
                                                     "Error processing message from channel $channel"
                                                 }
                                             }
@@ -86,7 +86,7 @@ class RedisMessageBroker(application: Application) : KoinComponent {
                                     channel
                             )
                         } catch (e: Exception) {
-                            logger.error(e) { "Error in Redis subscription for channel $channel" }
+                            loggingServiceLogger.error(e) { "Error in Redis subscription for channel $channel" }
                         } finally {
                             jedis.close()
                         }
@@ -101,11 +101,11 @@ class RedisMessageBroker(application: Application) : KoinComponent {
                 val typedMessage = GsonProvider.gson.fromJson(jsonMessage, clazz)
                 callback(typedMessage)
             } catch (e: Exception) {
-                logger.error(e) { "Error deserializing message from channel $channel" }
+                loggingServiceLogger.error(e) { "Error deserializing message from channel $channel" }
             }
         }
 
-        logger.info { "Subscribed to channel $channel" }
+        loggingServiceLogger.info { "Subscribed to channel $channel" }
     }
 
     /** Unsubscribe from a channel */
@@ -113,13 +113,13 @@ class RedisMessageBroker(application: Application) : KoinComponent {
         subscribers.remove(channel)
         pubSubThreads[channel]?.interrupt()
         pubSubThreads.remove(channel)
-        logger.info { "Unsubscribed from channel $channel" }
+        loggingServiceLogger.info { "Unsubscribed from channel $channel" }
     }
 
     /** Close the Redis connection pool */
     fun close() {
         pubSubThreads.values.forEach { it.interrupt() }
         jedisPool.close()
-        logger.info { "Closed Redis message broker" }
+        loggingServiceLogger.info { "Closed Redis message broker" }
     }
 }

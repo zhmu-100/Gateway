@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /**
  * Client for the Feed service.
@@ -27,7 +27,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @return The created post with server-generated fields populated
      */
     suspend fun createPost(post: Post): Post {
-        logger.info { "Creating post for user: ${post.userId}" }
+        loggingServiceLogger.info { "Creating post for user: ${post.userId}" }
         val request = CreatePostRequest(post)
         return post("/posts", request)
     }
@@ -39,7 +39,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @return The post object if found
      */
     suspend fun getPost(id: String): Post {
-        logger.info { "Getting post with ID: $id" }
+        loggingServiceLogger.info { "Getting post with ID: $id" }
         return get("/posts/$id")
     }
 
@@ -58,7 +58,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
             page: Int = 1,
             pageSize: Int = 20
     ): ListPostsResponse {
-        logger.info { "Listing posts for user ID: $userId, viewed by: $viewerId" }
+        loggingServiceLogger.info { "Listing posts for user ID: $userId, viewed by: $viewerId" }
         return get("/users/$userId/posts?viewerId=$viewerId&page=$page&pageSize=$pageSize")
     }
 
@@ -71,7 +71,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @return A paginated response containing posts and pagination metadata
      */
     suspend fun listPosts(viewerId: String, page: Int = 1, pageSize: Int = 20): ListPostsResponse {
-        logger.info { "Listing feed posts for viewer ID: $viewerId" }
+        loggingServiceLogger.info { "Listing feed posts for viewer ID: $viewerId" }
         return get("/posts?viewerId=$viewerId&page=$page&pageSize=$pageSize")
     }
 
@@ -83,7 +83,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @return The created comment with server-generated fields populated
      */
     suspend fun createComment(postId: String, comment: PostComment): PostComment {
-        logger.info { "Creating comment on post ID: $postId by user: ${comment.userId}" }
+        loggingServiceLogger.info { "Creating comment on post ID: $postId by user: ${comment.userId}" }
         val request = CreateCommentRequest(postId, comment)
         return post("/posts/$postId/comments", request)
     }
@@ -101,7 +101,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
             page: Int = 1,
             pageSize: Int = 20
     ): ListCommentsResponse {
-        logger.info { "Listing comments for post ID: $postId" }
+        loggingServiceLogger.info { "Listing comments for post ID: $postId" }
         return get("/posts/$postId/comments?page=$page&pageSize=$pageSize")
     }
 
@@ -114,7 +114,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @return The created reaction object
      */
     suspend fun addReaction(postId: String, userId: String, reaction: Reaction): PostReaction {
-        logger.info { "Adding reaction to post ID: $postId by user: $userId" }
+        loggingServiceLogger.info { "Adding reaction to post ID: $postId by user: $userId" }
         val request = AddReactionRequest(postId, userId, reaction)
         return post("/posts/$postId/reactions", request)
     }
@@ -126,7 +126,7 @@ class FeedServiceClient(client: HttpClient, baseUrl: String) :
      * @param userId The ID of the user whose reaction to remove
      */
     suspend fun removeReaction(postId: String, userId: String) {
-        logger.info { "Removing reaction from post ID: $postId by user: $userId" }
+        loggingServiceLogger.info { "Removing reaction from post ID: $postId by user: $userId" }
         delete<Unit>("/posts/$postId/reactions?userId=$userId")
     }
 }

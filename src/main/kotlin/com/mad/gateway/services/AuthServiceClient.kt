@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the Auth service (Keycloak) */
 class AuthServiceClient(client: HttpClient, baseUrl: String) :
@@ -15,7 +15,7 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
 
         /** Login with username and password */
         suspend fun login(username: String, password: String): TokenResponse {
-                logger.info { "Authenticating user: $username" }
+                loggingServiceLogger.info { "Authenticating user: $username" }
                 val request =
                         LoginRequest(
                                 grantType = "password",
@@ -28,7 +28,7 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
 
         /** Refresh an access token using a refresh token */
         suspend fun refreshToken(refreshToken: String): TokenResponse {
-                logger.info { "Refreshing token" }
+                loggingServiceLogger.info { "Refreshing token" }
                 val request =
                         RefreshTokenRequest(
                                 grantType = "refresh_token",
@@ -40,14 +40,14 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
 
         /** Validate a token */
         suspend fun validateToken(token: String): TokenInfo {
-                logger.info { "Validating token" }
+                loggingServiceLogger.info { "Validating token" }
                 val request = ValidateTokenRequest(token = token, clientId = "mad-mobile-app")
                 return post("/realms/mad/protocol/openid-connect/token/introspect", request)
         }
 
         /** Logout a user */
         suspend fun logout(refreshToken: String) {
-                logger.info { "Logging out user" }
+                loggingServiceLogger.info { "Logging out user" }
                 val request =
                         LogoutRequest(refreshToken = refreshToken, clientId = "mad-mobile-app")
                 post<Unit>("/realms/mad/protocol/openid-connect/logout", request)
@@ -59,7 +59,7 @@ class AuthServiceClient(client: HttpClient, baseUrl: String) :
                 email: String,
                 password: String
         ): RegistrationResponse {
-                logger.info { "Registering new user: $username" }
+                loggingServiceLogger.info { "Registering new user: $username" }
                 val request =
                         RegistrationRequest(
                                 username = username,

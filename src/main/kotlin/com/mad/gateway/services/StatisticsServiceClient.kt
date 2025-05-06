@@ -6,7 +6,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the Statistics service */
 class StatisticsServiceClient(client: HttpClient, baseUrl: String) :
@@ -15,31 +15,31 @@ class StatisticsServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Get GPS data for an exercise */
     suspend fun getGPSData(exerciseId: String): GetGPSDataResponse {
-        logger.info { "Getting GPS data for exercise ID: $exerciseId" }
+        loggingServiceLogger.info { "Getting GPS data for exercise ID: $exerciseId" }
         return get("/gps?exerciseId=$exerciseId")
     }
 
     /** Get heart rate data for an exercise */
     suspend fun getHeartRateData(exerciseId: String): GetHeartRateDataResponse {
-        logger.info { "Getting heart rate data for exercise ID: $exerciseId" }
+        loggingServiceLogger.info { "Getting heart rate data for exercise ID: $exerciseId" }
         return get("/heartrate?exerciseId=$exerciseId")
     }
 
     /** Get calories data for a user */
     suspend fun getCaloriesData(userId: String): GetCaloriesDataResponse {
-        logger.info { "Getting calories data for user ID: $userId" }
+        loggingServiceLogger.info { "Getting calories data for user ID: $userId" }
         return get("/calories?userId=$userId")
     }
 
     /** Upload GPS data */
     suspend fun uploadGPSData(gpsData: GPSData) {
-        logger.info { "Uploading GPS data for exercise ID: ${gpsData.meta.exerciseId}" }
+        loggingServiceLogger.info { "Uploading GPS data for exercise ID: ${gpsData.meta.exerciseId}" }
         post<Unit>("/gps", gpsData)
     }
 
     /** Upload heart rate data */
     suspend fun uploadHeartRateData(heartRateData: HeartRateData) {
-        logger.info {
+        loggingServiceLogger.info {
             "Uploading heart rate data for exercise ID: ${heartRateData.meta.exerciseId}"
         }
         post<Unit>("/heartrate", heartRateData)
@@ -47,7 +47,7 @@ class StatisticsServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Upload calories data */
     suspend fun uploadCaloriesData(caloriesData: CaloriesData) {
-        logger.info { "Uploading calories data for user ID: ${caloriesData.meta.userId}" }
+        loggingServiceLogger.info { "Uploading calories data for user ID: ${caloriesData.meta.userId}" }
         post<Unit>("/calories", caloriesData)
     }
 }

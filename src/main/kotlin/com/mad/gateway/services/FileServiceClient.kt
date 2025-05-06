@@ -15,7 +15,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private val logger = KotlinLogging.logger {}
+private val loggingServiceLogger = KotlinLogging.logger {}
 
 /** Client for the File service (MinIO) */
 class FileServiceClient(client: HttpClient, baseUrl: String) :
@@ -147,7 +147,7 @@ class FileServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Get a file as a flow of bytes */
     fun getFileAsFlow(id: String): Flow<ByteArray> = flow {
-        logger.info { "Getting file with ID: $id as flow" }
+        loggingServiceLogger.info { "Getting file with ID: $id as flow" }
 
         val channel = client.get("$baseUrl/$id").body<ByteReadChannel>()
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
@@ -160,7 +160,7 @@ class FileServiceClient(client: HttpClient, baseUrl: String) :
 
     /** Get a file URL */
     suspend fun getFileUrl(id: String): GetFileUrlResponse {
-        logger.info { "Getting URL for file with ID: $id" }
+        loggingServiceLogger.info { "Getting URL for file with ID: $id" }
         return get("/url/$id")
     }
 
