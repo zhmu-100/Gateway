@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -54,18 +55,21 @@ class StatisticsServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the proto definitions
 
+@Serializable
 data class ExerciseMetadata(
         val id: String? = null,
         val exerciseId: String,
         val timestamp: String // ISO-8601 timestamp
 )
 
+@Serializable
 data class UserMetadata(
         val id: String? = null,
         val userId: String,
         val timestamp: String // ISO-8601 timestamp
 )
 
+@Serializable
 data class GPSPosition(
         val timestamp: String, // ISO-8601 timestamp
         val latitude: Double,
@@ -75,14 +79,20 @@ data class GPSPosition(
         val accuracy: Double
 )
 
+@Serializable
 data class GPSData(val meta: ExerciseMetadata, val positions: List<GPSPosition> = emptyList())
 
+@Serializable
 data class HeartRateData(val meta: ExerciseMetadata, val bpm: Int)
 
+@Serializable
 data class CaloriesData(val meta: UserMetadata, val calories: Double)
 
+@Serializable
 data class GetGPSDataResponse(val gpsData: List<GPSData>)
 
+@Serializable
 data class GetHeartRateDataResponse(val heartRateData: List<HeartRateData>)
 
+@Serializable
 data class GetCaloriesDataResponse(val caloriesData: List<CaloriesData>)

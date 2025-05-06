@@ -2,6 +2,7 @@ package com.mad.gateway.services
 
 import io.ktor.client.*
 import io.ktor.server.application.*
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -176,6 +177,7 @@ enum class AttachmentType {
  * @property userId The ID of the user who reacted
  * @property reaction The type of reaction
  */
+@Serializable
 data class PostReaction(val postId: String, val userId: String, val reaction: Reaction)
 
 /**
@@ -187,6 +189,7 @@ data class PostReaction(val postId: String, val userId: String, val reaction: Re
  * @property date The creation date as an ISO-8601 timestamp (null for new comments)
  * @property reactions List of reactions to this comment
  */
+@Serializable
 data class PostComment(
         val id: String? = null,
         val userId: String,
@@ -204,6 +207,7 @@ data class PostComment(
  * @property position The position of this attachment in the post (0-based)
  * @property url The URL where the attachment content can be accessed
  */
+@Serializable
 data class PostAttachment(
         val id: String? = null,
         val postId: String? = null,
@@ -223,6 +227,7 @@ data class PostAttachment(
  * @property reactions List of reactions to this post
  * @property comments List of comments on this post
  */
+@Serializable
 data class Post(
         val id: String? = null,
         val userId: String,
@@ -238,7 +243,7 @@ data class Post(
  *
  * @property post The post object to create
  */
-data class CreatePostRequest(val post: Post)
+@Serializable data class CreatePostRequest(val post: Post)
 
 /**
  * Response object for listing posts with pagination.
@@ -248,6 +253,7 @@ data class CreatePostRequest(val post: Post)
  * @property page The current page number
  * @property pageSize The number of posts per page
  */
+@Serializable
 data class ListPostsResponse(
         val posts: List<Post>,
         val total: Int,
@@ -261,7 +267,7 @@ data class ListPostsResponse(
  * @property postId The ID of the post to comment on
  * @property comment The comment object to create
  */
-data class CreateCommentRequest(val postId: String, val comment: PostComment)
+@Serializable data class CreateCommentRequest(val postId: String, val comment: PostComment)
 
 /**
  * Response object for listing comments with pagination.
@@ -271,6 +277,7 @@ data class CreateCommentRequest(val postId: String, val comment: PostComment)
  * @property page The current page number
  * @property pageSize The number of comments per page
  */
+@Serializable
 data class ListCommentsResponse(
         val comments: List<PostComment>,
         val total: Int,
@@ -285,4 +292,5 @@ data class ListCommentsResponse(
  * @property userId The ID of the user adding the reaction
  * @property reaction The type of reaction to add
  */
+@Serializable
 data class AddReactionRequest(val postId: String, val userId: String, val reaction: Reaction)

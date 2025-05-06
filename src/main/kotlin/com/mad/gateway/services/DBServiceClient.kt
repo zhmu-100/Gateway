@@ -2,6 +2,7 @@ package com.mad.gateway.services
 
 import io.ktor.client.*
 import io.ktor.server.application.*
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -53,16 +54,18 @@ class DBServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the gRPC definitions
 
-data class CreateRequest(val table: String, val data: Map<String, String>)
+@Serializable data class CreateRequest(val table: String, val data: Map<String, String>)
 
+@Serializable
 data class CreateResponse(val success: Boolean, val message: String, val insertedId: Long)
 
-data class ReadRequest(val query: String, val params: List<String>)
+@Serializable data class ReadRequest(val query: String, val params: List<String>)
 
-data class Row(val columns: Map<String, String>)
+@Serializable data class Row(val columns: Map<String, String>)
 
-data class ReadResponse(val rows: List<Row>)
+@Serializable data class ReadResponse(val rows: List<Row>)
 
+@Serializable
 data class UpdateRequest(
         val table: String,
         val data: Map<String, String>,
@@ -70,12 +73,15 @@ data class UpdateRequest(
         val conditionParams: List<String>
 )
 
+@Serializable
 data class UpdateResponse(val success: Boolean, val message: String, val rowsAffected: Long)
 
+@Serializable
 data class DeleteRequest(
         val table: String,
         val condition: String,
         val conditionParams: List<String>
 )
 
+@Serializable
 data class DeleteResponse(val success: Boolean, val message: String, val rowsAffected: Long)

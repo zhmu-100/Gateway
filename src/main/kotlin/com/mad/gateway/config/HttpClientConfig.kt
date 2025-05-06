@@ -32,6 +32,7 @@ fun createHttpClient(): HttpClient {
                         ignoreUnknownKeys = true // Ignore unknown keys in JSON responses
                         coerceInputValues = true // Coerce null values to defaults if possible
                         useAlternativeNames = false // Don't use alternative names for properties
+                        encodeDefaults = true // Include default property values
                     }
             )
         }

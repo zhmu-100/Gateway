@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -82,10 +83,13 @@ class ProfileServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the proto definitions
 
+@Serializable
 data class Location(val country: String, val city: String)
 
+@Serializable
 data class Birthdate(val year: Int, val month: Int, val day: Int)
 
+@Serializable
 data class UserProfile(
         val id: String,
         val name: String,
@@ -100,10 +104,13 @@ data class UserProfile(
         val followingCount: Int = 0
 )
 
+@Serializable
 data class CreateProfileRequest(val profile: UserProfile)
 
+@Serializable
 data class UpdateProfileRequest(val profile: UserProfile)
 
+@Serializable
 data class ListProfilesResponse(
         val profiles: List<UserProfile>,
         val total: Int,
@@ -111,10 +118,13 @@ data class ListProfilesResponse(
         val pageSize: Int
 )
 
+@Serializable
 data class FollowRequest(val followerId: String, val followeeId: String)
 
+@Serializable
 data class UnfollowRequest(val followerId: String, val followeeId: String)
 
+@Serializable
 data class ListFollowersResponse(
         val followerIds: List<String>,
         val total: Int,
@@ -122,6 +132,7 @@ data class ListFollowersResponse(
         val pageSize: Int
 )
 
+@Serializable
 data class ListFollowingResponse(
         val followingIds: List<String>,
         val total: Int,

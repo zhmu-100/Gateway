@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flow
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -197,6 +198,7 @@ class FileServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the proto definitions
 
+@Serializable
 data class FileMetadata(
         val userId: String? = null,
         val private: Boolean = false,
@@ -208,6 +210,7 @@ data class FileMetadata(
         val folder: String? = null
 )
 
+@Serializable
 data class FixFileMetadata(
         val fileId: String,
         val mimeType: String,
@@ -215,6 +218,8 @@ data class FixFileMetadata(
         val size: Long
 )
 
+@Serializable
 data class UploadResponse(val id: String)
 
+@Serializable
 data class GetFileUrlResponse(val url: String)

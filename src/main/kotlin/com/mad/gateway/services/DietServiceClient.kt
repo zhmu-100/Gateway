@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -59,12 +60,16 @@ class DietServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the proto definitions
 
+@Serializable
 data class Vitamin(val id: String? = null, val name: String, val amount: Double, val unit: String)
 
+@Serializable
 data class VitaminFood(val id: String, val vitamins: List<Vitamin> = emptyList())
 
+@Serializable
 data class Mineral(val id: String? = null, val name: String, val amount: Double, val unit: String)
 
+@Serializable
 data class Food(
         val id: String? = null,
         val name: String,
@@ -80,6 +85,7 @@ data class Food(
         val minerals: List<Mineral> = emptyList()
 )
 
+@Serializable
 enum class MealType {
     UNSPECIFIED,
     BREAKFAST,
@@ -88,6 +94,7 @@ enum class MealType {
     SNACK
 }
 
+@Serializable
 data class Meal(
         val id: String? = null,
         val name: String,
@@ -96,8 +103,10 @@ data class Meal(
         val date: String // ISO-8601 timestamp
 )
 
+@Serializable
 data class CreateMealRequest(val meal: Meal)
 
+@Serializable
 data class ListMealsResponse(
         val meals: List<Meal>,
         val total: Int,
@@ -105,8 +114,10 @@ data class ListMealsResponse(
         val pageSize: Int
 )
 
+@Serializable
 data class CreateFoodRequest(val food: Food)
 
+@Serializable
 data class ListFoodsResponse(
         val foods: List<Food>,
         val total: Int,

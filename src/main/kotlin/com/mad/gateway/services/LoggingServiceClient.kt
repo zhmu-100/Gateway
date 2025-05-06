@@ -2,6 +2,7 @@ package com.mad.gateway.services
 
 import java.time.Instant
 import mu.KotlinLogging
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -58,6 +59,7 @@ class LoggingServiceClient {
     }
 }
 
+@Serializable
 enum class LogLevel {
     DEBUG,
     INFO,

@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -58,6 +59,7 @@ class TrainingServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the proto definitions
 
+@Serializable
 enum class ExerciseReaction {
     UNSPECIFIED,
     EXCELLENT,
@@ -67,12 +69,14 @@ enum class ExerciseReaction {
     VERY_BAD
 }
 
+@Serializable
 enum class ExerciseType {
     UNSPECIFIED,
     STATIC,
     DYNAMIC
 }
 
+@Serializable
 enum class ExerciseName {
     UNSPECIFIED,
     PUSHUPS,
@@ -83,6 +87,7 @@ enum class ExerciseName {
     CYCLING
 }
 
+@Serializable
 data class Exercise(
         val name: ExerciseName,
         val duration: String, // ISO-8601 duration
@@ -99,6 +104,7 @@ data class Exercise(
         val note: String? = null
 )
 
+@Serializable
 data class Workout(
         val id: String? = null,
         val name: String,
@@ -106,6 +112,7 @@ data class Workout(
         val exercises: List<Exercise> = emptyList()
 )
 
+@Serializable
 data class ListWorkoutsResponse(
         val workouts: List<Workout>,
         val total: Int,
@@ -113,6 +120,8 @@ data class ListWorkoutsResponse(
         val pageSize: Int
 )
 
+@Serializable
 data class GetWorkoutExercisesResponse(val exercises: List<Exercise>)
 
+@Serializable
 data class CreateCustomWorkoutResponse(val id: String)

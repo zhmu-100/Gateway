@@ -11,6 +11,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 
+private val logger = KotlinLogging.logger {}
+
 /**
  * Base service client implementation.
  *

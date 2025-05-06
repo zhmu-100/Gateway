@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.serialization.Serializable
 
 private val logger = KotlinLogging.logger {}
 
@@ -87,6 +88,7 @@ class NotesServiceClient(client: HttpClient, baseUrl: String) :
 
 // Data classes based on the proto definitions
 
+@Serializable
 data class Note(
         val id: String? = null,
         val userId: String,
@@ -95,10 +97,13 @@ data class Note(
         val date: String? = null // ISO-8601 timestamp
 )
 
+@Serializable
 data class CreateNoteRequest(val note: Note)
 
+@Serializable
 data class UpdateNoteRequest(val note: Note)
 
+@Serializable
 data class ListNotesResponse(
         val notes: List<Note>,
         val total: Int,
@@ -106,6 +111,7 @@ data class ListNotesResponse(
         val pageSize: Int
 )
 
+@Serializable
 enum class NotificationAction {
     UNSPECIFIED,
     COMPLETE,
@@ -113,6 +119,7 @@ enum class NotificationAction {
     SNOOZE
 }
 
+@Serializable
 enum class NotificationSnooze {
     UNSPECIFIED,
     FIVE_MINUTES,
@@ -123,6 +130,7 @@ enum class NotificationSnooze {
     ONE_DAY
 }
 
+@Serializable
 data class Notification(
         val id: String? = null,
         val userId: String,
@@ -132,8 +140,10 @@ data class Notification(
         val notificationDate: String // ISO-8601 timestamp
 )
 
+@Serializable
 data class CreateNotificationRequest(val notification: Notification)
 
+@Serializable
 data class NotificationActionRequest(
         val id: String,
         val userId: String,
@@ -141,6 +151,7 @@ data class NotificationActionRequest(
         val snoozeDuration: NotificationSnooze? = null
 )
 
+@Serializable
 data class ListNotificationsResponse(
         val notifications: List<Notification>,
         val total: Int,
