@@ -52,7 +52,9 @@ tasks {
                 // Link to Kotlin standard library
                 externalDocumentationLink {
                     url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/").toURL())
-                    packageListUrl.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL())
+                    packageListUrl.set(
+                            uri("https://kotlinlang.org/api/latest/jvm/stdlib/package-list").toURL()
+                    )
                 }
 
                 // Source link to GitHub
@@ -93,14 +95,10 @@ tasks {
         group = "verification"
         description = "Generates code coverage report for tests"
 
-        doLast {
-            println("JaCoCo test report task executed")
-        }
+        doLast { println("JaCoCo test report task executed") }
     }
 
-    wrapper {
-        gradleVersion = "8.10"
-    }
+    wrapper { gradleVersion = "8.10" }
 }
 
 repositories {
