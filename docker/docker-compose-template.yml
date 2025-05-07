@@ -79,8 +79,6 @@ services:
       - POSTGRES_PASSWORD=keycloak
     volumes:
       - keycloak-db-data:/var/lib/postgresql/data
-    ports:
-      - "5435:5432"
     networks:
       - app-network
     healthcheck:
